@@ -1,0 +1,21 @@
+[project]
+name = "nytarchive"
+description = "Load data from NYT Archive API"
+dynamic = ["version"]
+dependencies = [
+    "requests",
+    "click",
+    "pyarrow",
+    "pandas",
+    "dbt-duckdb",
+]
+
+[project.scripts]
+load-archive-data = "nytarchive.run:run"
+
+[tool.setuptools.dynamic]
+version = {attr = "nytarchive.__version__"}
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
