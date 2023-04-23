@@ -8,13 +8,13 @@ NYTArchive is a Python package for interacting with the New York Times Archive A
 
 Install the package locally using, 
 
-```
+```bash
 pip install .
 ```
 
 ### Usage 
 
-```
+```python
 from nyt_archive import NYTArchive
 
 nyt = NYTArchive(api_key=YOUR_API_KEY)
