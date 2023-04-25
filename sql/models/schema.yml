@@ -1,0 +1,8 @@
+
+version: 2
+
+sources:
+  - name: raw_data
+    tables:
+      - name: nytdata
+      - name: stop_words
