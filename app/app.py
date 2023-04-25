@@ -21,26 +21,27 @@ def convert_to_datetime(df, col_name, format):
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = "News Trends: NYT"
+server = app.server
 load_figure_template("BOOTSTRAP")
 
 # data
-articles_p_mon = load_data("articles_per_month.parquet")
-articles_p_mon = convert_to_datetime(articles_p_mon, "year_month", "%Y-%m")
+content_monthly = load_data("monthly_content_counts.parquet")
+content_monthly = convert_to_datetime(content_monthly, "year_month", "%Y-%m")
 
 dt_distribution = load_data("dt_distribution.parquet")
 
-mm_growth = load_data("multimedia_growth.parquet")
-mm_growth = convert_to_datetime(mm_growth, "yr", "%Y")
+mm_yearly = load_data("yearly_multimedia_proportion.parquet")
+mm_yearly = convert_to_datetime(mm_yearly, "yr", "%Y")
 
 mm_prop_sec = load_data("multimedia_proportion_section.parquet").iloc[:10, :]
 
-mm_art_vol_sec = load_data("multimedia_article_volume_sec.parquet")
-mm_art_vol_sec = convert_to_datetime(mm_art_vol_sec, "yr", "%Y").sort_values(by="yr")
+dt_counts_by_sec_yearly = load_data("yearly_dt_sn_counts.parquet")
+dt_counts_by_sec_yearly = convert_to_datetime(
+    dt_counts_by_sec_yearly, "yr", "%Y"
+).sort_values(by="yr")
 
-sn_articles_per_month = load_data("sn_articles_per_month.parquet")
-sn_articles_per_month = convert_to_datetime(
-    sn_articles_per_month, "year_month", "%Y-%m"
-)
+section_monthly = load_data("monthly_section_counts.parquet")
+section_monthly = convert_to_datetime(section_monthly, "year_month", "%Y-%m")
 
 
 def blank_fig():
@@ -54,7 +55,7 @@ def blank_fig():
 
 def multimedia_growth():
     fig = px.line(
-        mm_growth,
+        mm_yearly,
         x="yr",
         y="proportion",
         line_shape="spline",
@@ -68,7 +69,7 @@ def multimedia_growth():
 
 
 def volume_section():
-    dff = sn_articles_per_month.groupby("section_name", as_index=False).agg(
+    dff = section_monthly.groupby("section_name", as_index=False).agg(
         num_articles=("num_articles", "sum")
     )
 
@@ -128,7 +129,7 @@ app.layout = dbc.Container(
         basis over the past 25 years. Two distinct spikes in volume are noticeable:
         - In 2006, there was a noticeable increase in content published across various 
         sections (such as Business Day, New York, and Opinion). These spikes are 
-        apparent when examining the volume of each individual [sections](#section-name).
+        apparent when examining the volume of each individual sections.
         - In 2009, there was a significant spike in volume that was largely driven by an 
         increase in blog content. This spike disappears when blog content is excluded.
 
@@ -187,16 +188,13 @@ app.layout = dbc.Container(
 )
 
 
-# callbacks
-
-
 @callback(Output("content-volume", "figure"), Input("exclude-blog", "checked"))
 def exclude_dead_checkbox(checked):
     if checked:
-        mask = articles_p_mon["section_name"] != "Blogs"
-        dff = articles_p_mon[mask].copy()
+        mask = content_monthly["section_name"] != "Blogs"
+        dff = content_monthly[mask].copy()
     else:
-        dff = articles_p_mon
+        dff = content_monthly
     dff = dff.groupby("year_month", as_index=False).agg(
         num_articles=("num_articles", "sum")
     )
@@ -219,7 +217,7 @@ def exclude_dead_checkbox(checked):
 
 @callback(Output("section-multimedia", "figure"), Input("section-dropdown", "value"))
 def section_multimedia(value):
-    dff = mm_art_vol_sec[mm_art_vol_sec["section_name"] == value]
+    dff = dt_counts_by_sec_yearly[dt_counts_by_sec_yearly["section_name"] == value]
     fig = px.bar(
         dff,
         x="yr",
@@ -241,9 +239,9 @@ def update_on_click(clickData):
     if not clickData:
         raise exceptions.PreventUpdate
     section = clickData["points"][0]["x"]
-    dff = sn_articles_per_month[
-        sn_articles_per_month["section_name"] == section
-    ].sort_values("year_month")
+    dff = section_monthly[section_monthly["section_name"] == section].sort_values(
+        "year_month"
+    )
     fig = px.line(
         dff,
         x="year_month",
@@ -275,4 +273,4 @@ def highlight_bar(clickData):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(host="0.0.0.0", port="8050")
