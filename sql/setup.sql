@@ -1,5 +1,5 @@
 
-drop schema if exists raw_data;
+drop schema if exists raw_data cascade;
 create schema if not exists raw_data;
 
 create table if not exists raw_data.nytdata as (
@@ -13,5 +13,5 @@ create table if not exists raw_data.nytdata as (
     source,
     section_name,
     filename
-    from read_parquet('data/*.parquet', union_by_name=true, filename=true)
+    from read_parquet('.data/*.parquet', union_by_name=true, filename=true)
 );

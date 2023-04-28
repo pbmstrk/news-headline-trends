@@ -13,4 +13,4 @@ with stg_data as (select
 )
 
 select * from stg_data
-where extract('year' from pub_date) = cast(filename[6:9] as int)
+where extract('year' from pub_date) = cast(filename[7:10] as int)

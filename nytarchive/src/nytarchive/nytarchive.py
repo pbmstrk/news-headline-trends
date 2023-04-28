@@ -44,7 +44,7 @@ class NYTArchive:
         self._base_url = "https://api.nytimes.com/svc/archive/v1/"
 
     def load_data(
-        self, year: int, month: int, data_path: str = "data/", force_load: bool = False
+        self, year: int, month: int, data_path: str = ".data/", force_load: bool = False
     ):
         """
         Load data for a given year and month from the New York Times archive API, or

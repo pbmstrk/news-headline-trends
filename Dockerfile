@@ -5,7 +5,7 @@ FROM python:3.11-slim
 WORKDIR /nytdata 
 
 COPY app ./app/
-COPY assets ./assets/
+COPY data ./data/
 
 RUN pip install --upgrade pip
 RUN pip install -r app/requirements.txt 
