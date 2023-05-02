@@ -194,10 +194,13 @@ app.layout = html.Div(
                             dbc.Col(
                                 dcc.Graph(
                                     figure=generate_section_volume_chart(), 
-                                    id="section-bar-chart"
-                                )
+                                    id="section-bar-chart"),
+                                md=6
                             ),
-                            dbc.Col(dcc.Graph(figure=blank_fig(), id="section-growth")),
+                            dbc.Col(
+                                dcc.Graph(figure=blank_fig(), id="section-growth"), 
+                                md=6
+                            ),
                         ]
                     ),
                 ],
