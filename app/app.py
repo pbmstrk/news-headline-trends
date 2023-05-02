@@ -3,8 +3,8 @@ import dash_mantine_components as dmc
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
-from dash import (Dash, Input, Output, callback, dash_table, dcc, exceptions,
-                  html)
+from dash import (Dash, Input, Output, Patch, State, callback, dash_table, dcc,
+                  exceptions, html)
 from dash_bootstrap_templates import load_figure_template
 
 INTRODUCTION = """
@@ -294,20 +294,23 @@ def update_on_click(clickData):
 
 
 @callback(
-    Output("section-bar-chart", "figure"), Input("section-bar-chart", "clickData")
+    Output("section-bar-chart", "figure"), 
+    Input("section-bar-chart", "clickData"),
+    State("section-bar-chart", "figure")
 )
-def highlight_bar(clickData):
+def highlight_bar(clickData, figure):
     """Highlights the bar corresponding to the section clicked by the user."""
     if not clickData:
         raise exceptions.PreventUpdate
     section = clickData["points"][0]["x"]
-    fig = generate_section_volume_chart()
-    fig.update_traces(
-        marker_color=[
-            "#1B4D3E" if c == section else "#A0A0A0" for c in fig["data"][0]["x"]
+    patched_figure = Patch()
+    options = figure["data"][0]["x"]
+    marker_colors = [
+            "#1B4D3E" if c == section else "#A0A0A0" for c in options
         ]
-    )
-    return fig
+    patched_figure["data"][0]["marker"]["color"] = marker_colors
+    
+    return patched_figure
 
 
 if __name__ == "__main__":
