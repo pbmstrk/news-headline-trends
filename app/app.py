@@ -165,7 +165,7 @@ app.layout = html.Div(
                     html.H3(children="Content volume"),
                     dcc.Markdown(CONTENT_VOLUME),
                     dmc.Checkbox(id="exclude-blog", label="Exclude blog content."),
-                    dcc.Graph(figure={}, id="content-volume"),
+                    dcc.Graph(id="content-volume"),
                     html.H3("Content Type"),
                     dcc.Markdown(CONTENT_TYPE[0]),
                     dash_table.DataTable(
@@ -186,7 +186,7 @@ app.layout = html.Div(
                         id="section-dropdown",
                         clearable=False,
                     ),
-                    dcc.Graph(figure={}, id="section-multimedia"),
+                    dcc.Graph(id="section-multimedia"),
                     html.H3("Section Name"),
                     dcc.Markdown(SECTION_NAME),
                     dbc.Row(
@@ -311,4 +311,4 @@ def highlight_bar(clickData):
 
 
 if __name__ == "__main__":
-    app.run_server(host="0.0.0.0", port="8050")
+    app.run_server(host="0.0.0.0", port="8050", debug=True)
