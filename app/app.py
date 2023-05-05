@@ -208,7 +208,7 @@ app.layout = html.Div(
                                 html.I(className="fa-brands fa-github icon"),
                                 "pbmstrk"
                             ],
-                            href='https://github.com/pbmstrk/https://github.com/pbmstrk/nytdata',
+                            href='https://github.com/pbmstrk/nytdata',
                             className="footer-link",
                             target="_blank"),
                     ], className="footer")
