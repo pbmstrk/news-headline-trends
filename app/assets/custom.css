@@ -7,3 +7,16 @@
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+.footer {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.footer-link {
+    text-decoration: none;
+}
+
+.icon {
+    margin-right: 5px;
+}

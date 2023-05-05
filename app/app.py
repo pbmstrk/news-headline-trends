@@ -71,7 +71,7 @@ def convert_to_datetime(df, col_name, format):
     return df
 
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME])
 app.title = "News Trends: NYT"
 server = app.server
 load_figure_template("BOOTSTRAP")
@@ -203,6 +203,15 @@ app.layout = html.Div(
                             ),
                         ]
                     ),
+                    html.Footer([
+                        html.A(children=[
+                                html.I(className="fa-brands fa-github icon"),
+                                "pbmstrk"
+                            ],
+                            href='https://github.com/pbmstrk/https://github.com/pbmstrk/nytdata',
+                            className="footer-link",
+                            target="_blank"),
+                    ], className="footer")
                 ],
             ),
             className="container",
