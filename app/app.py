@@ -154,15 +154,15 @@ app.layout = html.Div(
                 children=[
                     html.H1(
                         "Historical News Trends: New York Times",
-                        style={"font-weight": "bold", "margin-bottom": "0px"},
+                        className="title"
                     ),
                     html.Hr(),
                     html.H2(
-                        children="Investigating historical article metadata and trends."
+                        "Investigating historical article metadata and trends."
                     ),
-                    html.H3(children="Data overview"),
+                    html.H3("Data overview"),
                     dcc.Markdown(INTRODUCTION),
-                    html.H3(children="Content volume"),
+                    html.H3("Content volume"),
                     dcc.Markdown(CONTENT_VOLUME),
                     dmc.Checkbox(id="exclude-blog", label="Exclude blog content."),
                     dcc.Graph(id="content-volume"),
@@ -205,7 +205,7 @@ app.layout = html.Div(
                     ),
                 ],
             ),
-            style={"margin-top": "10px"},
+            className="container",
         ),
     ]
 )
