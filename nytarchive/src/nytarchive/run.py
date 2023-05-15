@@ -1,6 +1,7 @@
 import itertools
 import logging
 import time
+from datetime import datetime
 
 import click
 
@@ -28,10 +29,15 @@ def run(start_year, end_year, force_load):
     """
     nyt = NYTArchive()
 
+    CURRENT_MONTH = datetime.now().month 
+    CURRENT_YEAR = datetime.now().year
+
     years = list(range(start_year, end_year + 1))
     months = list(range(1, 13))
 
     for year, month in itertools.product(years, months):
+        if year == CURRENT_YEAR and month >= CURRENT_MONTH:
+            break
         data = nyt.load_data(year, month, force_load=force_load)
         if data.source == "api":
             time.sleep(12)

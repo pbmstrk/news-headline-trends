@@ -15,3 +15,7 @@ create table if not exists raw_data.nytdata as (
     filename
     from read_parquet('.data/*.parquet', union_by_name=true, filename=true)
 );
+
+create table if not exists raw_data.allow_words as (
+    select allow_word from read_csv_auto('allow_words.csv', header=true)
+);

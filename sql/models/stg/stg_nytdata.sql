@@ -12,5 +12,6 @@ with stg_data as (select
     from {{ source('raw_data', 'nytdata') }}
 )
 
-select * from stg_data
+select *, 
+concat(extract('year' from pub_date), '-', right('00' || cast(extract('month' from pub_date) as varchar), 2)) as year_month from stg_data
 where extract('year' from pub_date) = cast(filename[7:10] as int)

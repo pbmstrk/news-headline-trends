@@ -5,4 +5,4 @@ sources:
   - name: raw_data
     tables:
       - name: nytdata
-      - name: stop_words
+      - name: allow_words

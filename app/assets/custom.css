@@ -1,6 +1,5 @@
 .title {
     font-weight: bold;
-    margin-bottom: 0px
 }
 
 .container {
@@ -19,4 +18,8 @@
 
 .icon {
     margin-right: 5px;
+}
+
+.modebar{
+    display: none !important;
 }
