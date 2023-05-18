@@ -1,5 +1,6 @@
 with processed_headlines as (
-    select trim(regexp_replace(headline, '[\d\W_]', ' ', 'g')) as processed_headline,
+
+    select regexp_replace(headline, '[\d\W_]', ' ', 'g').trim() as processed_headline,
     *
     from {{ ref('stg_nytdata') }}
     where section_name <> 'Archives'
@@ -10,6 +11,6 @@ word_array as (
     from processed_headlines
     where processed_headline <> ''
 )
-select lower(unnest(words)) as word,
+select unnest(words).lower() as word,
     *
     from word_array
