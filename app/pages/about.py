@@ -20,9 +20,9 @@ To use the API follow the [getting started guide](https://developer.nytimes.com/
 
 The data contains headlines from 1997 (the year after NYT launched a 
 [website](https://www.nytimes.com/1996/01/22/business/the-new-york-times-introduces-a-web-site.html))
-to 2022. A simple tokenization process was used to process the headlines: all non-letter
+to 2022. A simple tokenization was used to process the headlines: all non-letter
 characters were removed, and the headlines were split on whitespace. 
-While this approach introduces some level of noise, it does not obscure the emergence of
+While this approach introduces some level of noise, it does not obscure some
 distinct patterns. For example, a surge in news coverage related to Japan can be 
 observed during the Tōhoku earthquake and tsunami, as well as a notable increase in 
 headlines concerning Afghanistan during the time of the US withdrawal."""
