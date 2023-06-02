@@ -1,33 +1,34 @@
+import os
+
 import dash
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-from dash import (Input, Output, State, callback, dash_table, dcc,
-                  exceptions, html, no_update)
-import plotly.express as px
 import pandas as pd
-import duckdb
+import plotly.express as px
+from dash import (Input, Output, State, callback, dash_table, dcc, exceptions,
+                  html, no_update)
+from sqlalchemy import create_engine, text
 
 dash.register_page(__name__, path="/")
 
-# Data loading and conversion functions
-def load_data(parquet_file, dir_path="data/"):
-    """Load data from a parquet file located in a directory and
-    return it as a pandas DataFrame."""
-    return pd.read_parquet(dir_path + parquet_file)
+# CONSTANTS
+DEFAULT_KEYWORDS = ["japan", "afghanistan"]
 
-def convert_to_datetime(df, col_name, date_time_format):
-    """Converts a column in a Pandas DataFrame to datetime object."""
-    df[col_name] = pd.to_datetime(df[col_name], format=date_time_format, utc=True).dt.date
-    return df
+# SQL QUERIES
+SQL_CONTENT_QUERY = "select * from monthly_content_counts;"
+SQL_UNIQUE_WORDS_QUERY = "select distinct word from word_headlines order by word;"
+SQL_KEYWORD_QUERY = """
+    select word, year_month, count(headline) as num_words
+    from word_headlines
+    where word in :wordlist
+    group by year_month, word;
+"""
+SQL_HEADLINES_QUERY = """
+    select headline from word_headlines
+    where word = :keyword and year_month = :year_month;
+"""
 
-# Load and preprocess data
-content_monthly = load_data("monthly_content_counts.parquet")
-content_monthly = convert_to_datetime(content_monthly, "year_month", "%Y-%m")
-
-unique_words = duckdb.sql(
-    "select distinct word from 'data/word_headlines.parquet' order by 1"
-).df()["word"].tolist()
-
+# INTRODUCTORY TEXT
 WORD_COUNTS_TEXT = """
 #### What is the NYT writing about?
 
@@ -36,9 +37,34 @@ past 25 years. By clicking on a trace in the graph, headlines containing the giv
 during that timeperiod can be sampled.
 """
 
-def process_str_for_sql(val):
-    return f"'{val}'"
 
+class MissingEnvVar(Exception):
+    pass
+
+def fetch_database_url():
+    """Fetches the database URL from the DATABASE_URL environment variable.
+    If the URL starts with 'postgres://', it replaces this with 'postgresql://'."""
+    database_url = os.getenv("DATABASE_URL")
+    if database_url is None:
+        raise MissingEnvVar("DATABASE_URL environment variable does not exist.")
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://",  "postgresql://", 1)
+    return database_url
+
+
+def execute_query(engine, sql, **query_params):
+    """Executes an SQL query and returns the result as a DataFrame."""
+    query = text(sql).bindparams(**query_params)
+    with engine.connect() as con:
+        return pd.read_sql(query, con)
+
+# Initialize DB and load data
+db_url = fetch_database_url()
+engine = create_engine(db_url, pool_pre_ping=True, pool_recycle=3600)
+
+# Load and preprocess data
+content_monthly = execute_query(engine, SQL_CONTENT_QUERY)
+unique_words = execute_query(engine, SQL_UNIQUE_WORDS_QUERY)["word"].tolist()
 
 total_volume = html.Div(
     [
@@ -65,7 +91,7 @@ layout = html.Div(children=[
         unique_words,
         multi=True,
         id="word-dropdown",
-        value=["japan", "afghanistan"]
+        value=DEFAULT_KEYWORDS
     ),
     dcc.Graph(id="word-counts"),
     dcc.Markdown(id="table-intro"),
@@ -82,19 +108,31 @@ layout = html.Div(children=[
     total_volume
 ])
 
-@callback(Output("word-counts", "figure"), Input("word-dropdown", "value"))
+@callback(
+    Output("word-counts", "figure"), 
+    Input("word-dropdown", "value")
+)
 def update_keyword_monthly(value):
+    """Updates the keyword figure showing the monthly count of headlines containing each
+    keyword. If no value is selected in the dropdown, it returns `dash.no_update` to 
+    prevent updating the figure."""
+
     if not value:
         return no_update
-    qry = f"""
-    select word, year_month, count(headline) as num_words
-    from 'data/word_headlines.parquet'
-    where word in ({','.join(map(process_str_for_sql, value))})
-    group by year_month, word
-    """
-    result_df = duckdb.sql(qry).df()
-    dff = convert_to_datetime(result_df, "year_month", "%Y-%m").sort_values("year_month")
-   
+    result_df = execute_query(engine, SQL_KEYWORD_QUERY, wordlist=tuple(value))
+    dff = result_df.groupby("word").apply(
+        lambda g: (
+            g.set_index("year_month")
+            .reindex(
+                pd.date_range(
+                    g["year_month"].min(), 
+                    g["year_month"].max(), 
+                    freq="M").strftime("%Y-%m")
+                )
+            .rename_axis("year_month")
+            .fillna({"num_words": 0}))
+    )[["num_words"]].reset_index()
+    
     fig = px.line(
         dff,
         x="year_month",
@@ -115,22 +153,24 @@ def update_keyword_monthly(value):
     return fig
 
 
-@callback([Output("example-headlines", "data"),
-Output("table-intro", "children")],
-[Input("word-counts", "clickData")],
-[State("word-counts", "figure")])
+@callback(
+    [Output("example-headlines", "data"), Output("table-intro", "children")],
+    [Input("word-counts", "clickData")],
+    [State("word-counts", "figure")]
+)
 def update_stories(clickData, figure):
-    """Update the displayed stories and table introduction based on click data."""
+    """Updates the table displaying example headlines and its introduction 
+    based on click data."""
+
     if clickData is None:
         raise exceptions.PreventUpdate
     curve_number = clickData["points"][0]["curveNumber"]
     keyword = figure["data"][curve_number]["name"]
     x_axis_click = clickData["points"][0]["x"]
-    qry = f"""select * from (select  headline from 'data/word_headlines.parquet'
-    where word = {process_str_for_sql(keyword)} 
-    and year_month = {process_str_for_sql(x_axis_click[:-3])})
-    using sample 5"""
-    sample = duckdb.sql(qry).df()
+    result = execute_query(
+        engine, SQL_HEADLINES_QUERY, keyword=keyword, year_month=x_axis_click[:-3]
+    )
+    sample = result.sample(min(5, result.shape[0]))
 
     text = f"Example headlines containing: **{keyword}**"
     return [sample.to_dict("records"), text]
@@ -142,14 +182,19 @@ def update_stories(clickData, figure):
     [State("collapse", "is_open")],
 )
 def toggle_collapse(n, is_open):
+    """Toggles the open state of a collapsible element and updates its button text."""
+
     text = {True: "Hide total volume published", False: "See total volume published"}
     if n:
         return not is_open, text[(not is_open)]
     return is_open, text[is_open]
 
-@callback(Output("content-volume", "figure"), Input("exclude-blog", "checked"))
+@callback(
+    Output("content-volume", "figure"), 
+    Input("exclude-blog", "checked")
+)
 def exclude_blog_checkbox(checked):
-    """Update line graph with the number of articles per month, based on whether
+    """Updates line graph with the number of articles per month, based on whether
     the "exclude-blog" checkbox is checked."""
 
     # filter the DataFrame based on the checkbox value

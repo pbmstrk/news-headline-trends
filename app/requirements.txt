@@ -5,4 +5,5 @@ dash_mantine_components
 dash_bootstrap_components
 dash_bootstrap_templates
 gunicorn
-duckdb
+sqlalchemy
+psycopg2-binary
