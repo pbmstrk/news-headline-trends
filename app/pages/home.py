@@ -127,12 +127,11 @@ def update_keyword_monthly(value):
                 pd.date_range(
                     g["year_month"].min(), 
                     g["year_month"].max(), 
-                    freq="M").strftime("%Y-%m")
-                )
+                    freq="MS").strftime("%Y-%m")
+            )
             .rename_axis("year_month")
             .fillna({"num_words": 0}))
     )[["num_words"]].reset_index()
-    
     fig = px.line(
         dff,
         x="year_month",
