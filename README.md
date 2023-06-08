@@ -1,6 +1,6 @@
 # News Headline Trends
 
-**news-headline-trends** is a [Dash](https://dash.plotly.com) application that visualizes and analyzes data related to word occurences in New York Times headlines. 
+[**news-headline-trends**](https://news-headline-trends.fly.dev) is a [Dash](https://dash.plotly.com) application that visualizes and analyzes data related to word occurences in New York Times headlines. 
 
 The app consists of the two mains features:
 1. **Word occurence visualisation**: View line graphs displaying the number of headlines containing the selected keywords over time.
