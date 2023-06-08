@@ -22,8 +22,16 @@ pip install --editable .
 
 3. Run the `setup.sh` script. This script  pulls the necessary data from the NYT API, performs data transformation, and exports the data for the app to use.
 
-4. Install the app prerequisties by running, 
+4. Load the data into a PostgreSQL database using `pg_reload.sql`. For example using `psql`: 
+
+```
+psql DBNAME -f pg_reload.sql
+```
+
+Make sure to also set the environment variable `DATABASE_URL`.
+
+5. Install the app prerequisties by running, 
 `pip install -r app/requirements.txt` 
 
-5. Run the application  by running the Python script (`python app/app.py`) or by building and running the Docker container.
+6. Run the application  by running the Python script (`python app/app.py`) or by building and running the Docker container.
 
