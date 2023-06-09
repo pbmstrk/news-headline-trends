@@ -147,7 +147,7 @@ def update_keyword_monthly(value):
         color_discrete_sequence=px.colors.qualitative.Bold,
         render_mode="svg")
     fig.update_traces(
-        hovertemplate="<br>".join(["Month: %{x}", "Number of occurrences: %{y}"])
+        hovertemplate="<br>".join(["Month: %{x|%B %Y}", "Number of occurrences: %{y}"])
     )
     return fig
 
@@ -216,7 +216,7 @@ def exclude_blog_checkbox(checked):
     )
 
     fig.update_traces(
-        hovertemplate="<br>".join(["Month: %{x}", "Number of articles: %{y}"]),
+        hovertemplate="<br>".join(["Month: %{x|%B %Y}", "Number of articles: %{y}"]),
         line={"width": 2.5, "color": "#1B4D3E"},
     )
 
