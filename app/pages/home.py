@@ -145,6 +145,7 @@ def update_keyword_monthly(value):
         },
         line_shape="spline",
         color_discrete_sequence=px.colors.qualitative.Bold,
+        category_orders={"word": value},
         render_mode="svg")
     fig.update_traces(
         hovertemplate="<br>".join(["Month: %{x|%B %Y}", "Number of occurrences: %{y}"])
