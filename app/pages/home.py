@@ -120,18 +120,19 @@ def update_keyword_monthly(value):
     if not value:
         return no_update
     result_df = execute_query(engine, SQL_KEYWORD_QUERY, wordlist=tuple(value))
-    dff = result_df.groupby("word").apply(
+
+    full_date_range = pd.date_range(
+        start=result_df["year_month"].min(),
+        end=result_df["year_month"].max(),
+        freq="MS"
+    ).strftime("%Y-%m")
+
+    dff = result_df.set_index("year_month").groupby("word").apply(
         lambda g: (
-            g.set_index("year_month")
-            .reindex(
-                pd.date_range(
-                    g["year_month"].min(), 
-                    g["year_month"].max(), 
-                    freq="MS").strftime("%Y-%m")
-            )
-            .rename_axis("year_month")
-            .fillna({"num_words": 0}))
+            g.reindex(full_date_range, fill_value=0)
+            .rename_axis("year_month"))
     )[["num_words"]].reset_index()
+    
     fig = px.line(
         dff,
         x="year_month",
