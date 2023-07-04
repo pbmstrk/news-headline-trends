@@ -2,5 +2,5 @@ nytdata:
   outputs:
    dev:
      type: duckdb
-     path: ../nytdata.duckdb
+     path: nytdata.duckdb
   target: dev
