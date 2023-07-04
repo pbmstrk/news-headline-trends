@@ -1,9 +1,8 @@
 create table if not exists monthly_content_counts (
-    year_month text,
-    section_name text,
-    num_articles text not null,
+    year_month text not null,
+    section_name text not null,
+    num_articles integer not null,
     PRIMARY KEY (year_month, section_name)
-
 );
 
 create table if not exists word_headlines (
