@@ -28,10 +28,9 @@ pip install --editable .
 psql DBNAME -f pg_reload.sql
 ```
 
-Make sure to also set the environment variable `DATABASE_URL`.
-
 5. Install the app prerequisties by running, 
 `pip install -r app/requirements.txt` 
 
 6. Run the application  by running the Python script (`python app/app.py`) or by building and running the Docker container.
 
+> Remember to set the environment variable `DATABASE_URL`.
