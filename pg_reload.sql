@@ -1,7 +1,7 @@
 create table if not exists monthly_content_counts (
-    year_month text not null,
-    section_name text not null,
-    num_articles integer not null,
+    year_month text,
+    section_name text,
+    num_articles integer not null check (num_articles >= 0),
     PRIMARY KEY (year_month, section_name)
 );
 
