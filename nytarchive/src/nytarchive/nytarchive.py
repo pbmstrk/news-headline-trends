@@ -9,7 +9,7 @@ variable.
 import logging
 import os
 from collections import namedtuple
-from typing import Optional, List, Dict, Any
+from typing import Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -31,7 +31,7 @@ class NYTArchive:
             the 'nyt_api_key' environment variable. Defaults to None.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         self._sess = requests.Session()
         if api_key is None:
             api_key = os.getenv("nyt_api_key")
@@ -73,7 +73,7 @@ class NYTArchive:
         return NYTArchiveData(data=article_list, source="api")
 
     @staticmethod
-    def write_to_parquet(data: List[Dict[str, Any]], file_name: str) -> None:
+    def write_to_parquet(data: list[dict[str, Any]], file_name: str) -> None:
         """
         Write data to a parquet file.
 
