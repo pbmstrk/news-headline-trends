@@ -1,0 +1,14 @@
+.data/
+data/
+sql/
+
+.ipynb_checkpoints/
+.ruff_cache/
+.venv/
+.DS_Store
+*.mypy_cache/
+*.exe
+*.ipynb
+*.duckdb
+*.json
+*.egg-info
