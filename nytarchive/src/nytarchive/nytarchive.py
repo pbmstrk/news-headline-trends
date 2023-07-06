@@ -9,7 +9,7 @@ variable.
 import logging
 import os
 from collections import namedtuple
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -45,7 +45,7 @@ class NYTArchive:
 
     def load_data(
         self, year: int, month: int, data_path: str = ".data/", force_load: bool = False
-    ):
+    ) -> NYTArchiveData:
         """
         Load data for a given year and month from the New York Times archive API, or
         from a local parquet file if available.
@@ -73,7 +73,7 @@ class NYTArchive:
         return NYTArchiveData(data=article_list, source="api")
 
     @staticmethod
-    def write_to_parquet(data: list, file_name: str):
+    def write_to_parquet(data: List[Dict[str, Any]], file_name: str) -> None:
         """
         Write data to a parquet file.
 

@@ -2,6 +2,7 @@
 .ruff_cache/
 .venv/
 .DS_Store
+*.mypy_cache/
 
 sql/target/
 sql/dbt_packages/
