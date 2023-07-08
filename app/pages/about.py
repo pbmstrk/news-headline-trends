@@ -9,9 +9,9 @@ OVERVIEW = """
 The [Archive API](https://developer.nytimes.com/docs/archive-product/1/overview), 
 available through [New York Times Developer Network](https://developer.nytimes.com), 
 enables users to access  metadata for articles published by the NYT, 
-going back to 1851. The API returns a multitude of metadata fields related to a given 
+going back to 1851. The API returns metadata fields related to a given 
 article, which can be used to analyze how the newspaper's news coverage has evolved 
-over time. For the full documentation, view the complete
+over time. For the full documentation, view the
 [article schema](https://developer.nytimes.com/docs/archive-product/1/types/Article).
 
 To use the API follow the [getting started guide](https://developer.nytimes.com/get-started).
