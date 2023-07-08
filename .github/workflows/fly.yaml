@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - app
+      - app/**
 jobs:
   deploy:
     name: Deploy app
