@@ -13,6 +13,9 @@ dependencies = [
 [project.scripts]
 load-archive-data = "nytarchive.run:run"
 
+[tool.mypy]
+mypy_path = "src"
+
 [tool.setuptools.dynamic]
 version = {attr = "nytarchive.__version__"}
 
