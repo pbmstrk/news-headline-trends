@@ -16,7 +16,7 @@ logging.basicConfig(
 @click.argument("start_year", type=click.INT)
 @click.argument("end_year", type=click.INT)
 @click.option("--force-load", is_flag=True, default=False)
-def run(start_year, end_year, force_load):
+def run(start_year: int, end_year: int, force_load: bool) -> None:
     """
     Loads data from the New York Times archive API using the NYTArchive class for a
     given range of years. Saves the data to local parquet files.
