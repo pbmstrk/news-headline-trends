@@ -18,3 +18,14 @@ data/
 *.duckdb
 *.json
 *.egg-info
+
+.clj-kondo/
+.cpcache/
+.idea/
+
+target/
+
+.local-env 
+
+.nrepl-port
+*.iml
