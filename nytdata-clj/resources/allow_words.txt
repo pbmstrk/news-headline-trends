@@ -1,4 +1,3 @@
-allow_word
 afghanistan
 africa
 alabama
