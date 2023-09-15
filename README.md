@@ -8,29 +8,39 @@ The app consists of the two mains features:
 
 ## Setup and Usage
 
-To set up the app following these setups:
+### Prerequisites
 
-1. Install [`duckdb`](https://duckdb.org/#quickinstall). On MacOS the `duckdb` executable can be installed using Homebrew:
-`brew install duckdb`
+1. Sign up for an API key on the [New York Times Developer Network](https://developer.nytimes.com)
+2. Create a Postgres database (locally or in the cloud)
 
-2. Install the `nytarchive` package by running 
+> The Clojure code used to fetch data from the API requires two environment variables to be set: `nyt_api_key` and `database_url`.
 
-```
-cd nytarchive
-pip install --editable .
-```
+### Load data
 
-3. Run the `setup.sh` script. This script  pulls the necessary data from the NYT API, performs data transformation, and exports the data for the app to use.
+4. Create the tables in the database using the [setup.sql](sql-scripts/setup.sql) script. If you're using `psql` run:
 
-4. Load the data into a PostgreSQL database using `pg_reload.sql`. For example using `psql`: 
-
-```
-psql DBNAME -f pg_reload.sql
+```bash 
+psql {db-connection-string} -f sql-scripts/setup.sql 
 ```
 
-5. Install the app prerequisties by running, 
-`pip install -r app/requirements.txt` 
+5. Run the Clojure script to load the data (the code can be run using either `clj` or Docker). Navigate to the `nytdata-clj` directory and run:
 
-6. Run the application  by running the Python script (`python app/app.py`) or by building and running the Docker container.
+Using `clj`:
 
-> Remember to set the environment variable `DATABASE_URL`.
+```bash 
+clj -M -m nytdata.main
+```
+
+Using Docker:
+
+```
+docker build -t nytdata-clj .
+docker run  --rm --env-file {env-file} nytdata-clj
+```
+
+### Run the app
+
+6. Run the app by either running the Python script directly (`python app/app.py`) or building and running the Docker container.
+
+
+> The app requires the `DATABASE_URL` environment variable to be set.
