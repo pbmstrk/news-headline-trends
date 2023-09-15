@@ -26,6 +26,7 @@ data/
 target/
 
 .local-env 
+.prod-env
 
 .nrepl-port
 *.iml
