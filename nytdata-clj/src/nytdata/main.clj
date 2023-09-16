@@ -1,16 +1,15 @@
 (ns nytdata.main
   (:gen-class)
-  (:require [cheshire.core :refer [parse-string]]
-            [clj-http.client :as client]
+  (:require [clj-http.client :as client]
             [clojure.string :as str]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as sql]
             [nytdata.utils.date :as date-utils]
             [nytdata.utils.db :as db-utils]))
 
-(def PARAMETERIZED-URL
+(def parameterized-url
   "https://api.nytimes.com/svc/archive/v1/%s/%s.json")
-(def API-KEY
+(def api-key
   (System/getenv "nyt_api_key"))
 
 (defn construct-nyt-api-url
@@ -19,29 +18,27 @@
   (let [[year month] (str/split year-month #"-")]
     (format url year month)))
 
-(defn extract-docs-from-response
-  "Extracts 'docs' key from the API response."
+(defn extract-articles-from-response
+  "Extracts articles from the API response."
   [response]
-  (-> response
-      :body
-      parse-string
-      (get-in ["response" "docs"])))
+  (get-in response [:body :response :docs]))
 
 (defn fetch-nyt-data-for-month
   "Fetches data from the NYT API for a given year and month."
   [year-month]
-  (let [url (construct-nyt-api-url PARAMETERIZED-URL year-month)
-        response (client/get url {:throw-exceptions false :accept :json :query-params {"api-key" API-KEY}})]
+  (let [url (construct-nyt-api-url parameterized-url year-month)
+        response (client/get url {:throw-exceptions false :as :json :query-params {"api-key" api-key}})]
     (if (= 200 (:status response))
-      (extract-docs-from-response response)
+      (extract-articles-from-response response)
       (throw (Exception. (str "Failed to fetch data for " year-month ": " (:status response)))))))
 
 (defn extract-metadata [doc]
-  (let [uri (get doc "uri")
-        headline  (get-in doc ["headline" "main"])
-        year_month (date-utils/extract-year-month-from-timestamp (get doc "pub_date"))
-        section-name (get doc "section_name")]
-    [uri headline year_month section-name]))
+  ((juxt :uri
+         (comp :main :headline)
+         (comp (partial date-utils/extract-year-month-from-timestamp) :pub_date)
+         :section_name)
+   doc))
+
 
 (defn insert-headlines!
   [ds docs]
