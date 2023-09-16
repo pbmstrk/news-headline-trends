@@ -3,6 +3,7 @@
   (:require [cheshire.core :refer [parse-string]]
             [clj-http.client :as client]
             [clojure.string :as str]
+            [next.jdbc :as jdbc]
             [next.jdbc.sql :as sql]
             [nytdata.utils.date :as date-utils]
             [nytdata.utils.db :as db-utils]
@@ -51,29 +52,38 @@
   (->> coll
        (group-by (juxt :section_name :year_month))
        (map (fn [[[section-name year-month] entries]]
-              {:section_name section-name
-               :year_month   year-month
-               :num_articles (count entries)}))
+              [ section-name
+               year-month
+               (count entries)]))
        (into [])))
 
 
 (defn extract-counts [docs]
-  (->> docs (map extract-section-and-date) count-articles-by-section-and-date))
+  (->> docs
+       (map extract-section-and-date)
+       count-articles-by-section-and-date))
 
 
+; need to insert and handle conflict as results from API
+; not necessarily clean (i.e. call to /2017/01 may
+; sometimes include headlines from other months)
 (defn insert-counts
   "Inserts section counts into the monthly_content_counts table."
   [ds docs]
-  (sql/insert-multi! ds :monthly_content_counts
-                     (extract-counts docs) {:return-keys false}))
+  (jdbc/execute-batch! ds (str "INSERT INTO monthly_content_counts (year_month, section_name, num_articles)"
+                               "VALUES (?, ?, ?)"
+                               "ON CONFLICT (year_month, section_name)"
+                               "DO UPDATE SET num_articles = monthly_content_counts.num_articles + excluded.num_articles;")
+                       (extract-counts docs) {}))
 
 (defn extract-words [doc]
   (let [headline (str/lower-case (get-in doc ["headline" "main"]))
         pub-date (date-utils/extract-year-month-from-timestamp (get doc "pub_date"))
-        cleaned-text (str/replace headline #"[\d\W_]" " ")
+        uri (get doc "uri")
+        cleaned-text (str/replace headline #"[\d\W]" " ")
         words (str/split cleaned-text #"\s+")]
-    (for [word words :when (ALLOWED-WORDS word)]
-      {:word word :headline headline :year_month pub-date})))
+    (for [[index word] (map vector (range) words) :when (ALLOWED-WORDS word)]
+      {:word word :uri uri :word_index index :headline headline :year_month pub-date})))
 
 (defn insert-words
   "Inserts words from docs' headlines into the word_headlines table."
@@ -81,7 +91,7 @@
   (sql/insert-multi! ds :word_headlines
                      (mapcat extract-words docs) {:return-keys false}))
 
-(defn -main [& args]
+(defn -main []
   (let [ds (db-utils/get-datasource-from-env)
         latest-ym (db-utils/get-latest-processed-month ds)
         ym-seq (date-utils/year-month-sequence latest-ym)]

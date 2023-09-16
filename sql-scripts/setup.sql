@@ -6,9 +6,12 @@ create table if not exists monthly_content_counts (
 );
 
 create table if not exists word_headlines (
+    uri text not null,
+    word_index integer not null,
     word text not null,
     year_month text not null,
-    headline text not null
+    headline text not null,
+    PRIMARY KEY (uri, word_index)
 );
 
 create table if not exists process_log (
