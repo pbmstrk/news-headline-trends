@@ -18,7 +18,3 @@
 
 (defn extract-year-month-from-timestamp [timestamp]
   (subs timestamp 0 7))
-
-(defn convert-date-format [ym]
-  (let [date (YearMonth/parse ym (DateTimeFormatter/ofPattern "yyyy-M"))]
-    (.format date (DateTimeFormatter/ofPattern "yyyy-MM"))))

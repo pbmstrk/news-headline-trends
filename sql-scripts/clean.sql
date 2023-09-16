@@ -1,1 +1,1 @@
-drop table process_log, word_headlines, monthly_content_counts;
+drop table if exists process_log, headlines, allowed_words cascade;
