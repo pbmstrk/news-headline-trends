@@ -5,7 +5,8 @@
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as sql]
             [nytdata.utils.date :as date-utils]
-            [nytdata.utils.db :as db-utils]))
+            [nytdata.utils.db :as db-utils]
+            [clojure.tools.cli :as cli]))
 
 (def parameterized-url
   "https://api.nytimes.com/svc/archive/v1/%s/%s.json")
@@ -52,9 +53,15 @@
     (insert-headlines! ds docs)
     (sql/insert! ds :process_log {:year_month ym :num num-docs})))
 
-(defn -main []
-  (let [ds (db-utils/get-datasource-from-env)
-        latest-ym (db-utils/get-latest-processed-month ds)
+
+(def cli-options
+  [["-s" "--start-date START-DATE" "Default start date"
+    :default "1996-12"]])
+
+(defn -main [& args]
+  (let [default-start (-> (cli/parse-opts args cli-options) :options :start-date)
+        ds (db-utils/get-datasource-from-env)
+        latest-ym (db-utils/get-latest-processed-month ds default-start)
         ym-seq (date-utils/year-month-sequence latest-ym)]
     (println (str "Processing months: " ym-seq))
     (doseq [ym ym-seq]

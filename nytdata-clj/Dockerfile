@@ -8,4 +8,4 @@ COPY build.clj build.clj
 
 RUN clj -T:build uber
 
-CMD ["java", "-jar", "target/nytdata-standalone.jar"]
+ENTRYPOINT ["java", "-jar", "target/nytdata-standalone.jar"]
