@@ -15,16 +15,16 @@ dash.register_page(__name__, path="/")
 DEFAULT_KEYWORDS = ["japan", "afghanistan"]
 
 # SQL QUERIES
-SQL_CONTENT_QUERY = "select * from monthly_content_counts;"
-SQL_UNIQUE_WORDS_QUERY = "select distinct word from word_headlines order by word;"
+SQL_CONTENT_QUERY = "select * from monthly_content_counts_vw;"
+SQL_UNIQUE_WORDS_QUERY = "select distinct word from word_headlines_vw order by word;"
 SQL_KEYWORD_QUERY = """
     select word, year_month, count(headline) as num_words
-    from word_headlines
+    from word_headlines_vw
     where word in :wordlist
     group by year_month, word;
 """
 SQL_HEADLINES_QUERY = """
-    select headline from word_headlines
+    select headline from word_headlines_vw
     where word = :keyword and year_month = :year_month;
 """
 
