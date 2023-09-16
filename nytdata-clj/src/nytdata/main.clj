@@ -39,13 +39,10 @@
          :section_name)
    doc))
 
-
 (defn insert-headlines!
   [ds docs]
-  (jdbc/execute-batch! ds (str "INSERT INTO headlines (uri, headline, year_month, section_name)"
-                               "VALUES (?, ?, ?, ?)"
-                               "ON CONFLICT DO NOTHING")
-                       (map extract-metadata docs) {}))
+  (let [query "INSERT INTO headlines (uri, headline, year_month, section_name) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING"]
+    (jdbc/execute-batch! ds query (map extract-metadata docs) {})))
 
 (defn process-month [ds ym]
   (println (str "Fetching data for month: " ym))
