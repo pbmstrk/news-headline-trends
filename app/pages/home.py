@@ -160,13 +160,13 @@ def update_keyword_monthly(value):
 
     df_list = []
     for word in tags:
-        if len(word.split(" ")) > 1: 
+        if len(word.split(" ")) > 1:
             continue
         result = execute_query(engine, SQL_FULL_TEXT_SEARCH, word=word)
-        result['word'] = word 
+        result['word'] = word
         df_list.append(result)
     result_df = pd.concat(df_list)
-    
+
     if result_df.empty:
         raise exceptions.PreventUpdate("No matching headlines found!")
 
@@ -190,7 +190,7 @@ def update_keyword_monthly(value):
         title="Number of headlines containing keyword",
         labels={
             "year_month": "Month", 
-            "num_headlines": "Number of headlines", 
+            "num_headlines": "Number of headlines",
             "word": "Word"
         },
         line_shape="spline",
@@ -200,6 +200,7 @@ def update_keyword_monthly(value):
     fig.update_traces(
         hovertemplate="<br>".join(["Month: %{x|%B %Y}", "Number of occurrences: %{y}"])
     )
+    fig.update_yaxes(rangemode="tozero")
     return fig
 
 
