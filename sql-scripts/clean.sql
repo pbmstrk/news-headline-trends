@@ -1,1 +1,1 @@
-drop table if exists process_log, headlines, allowed_words cascade;
+drop table if exists process_log, headlines cascade;

@@ -9,6 +9,7 @@ sql/dbt_packages/
 sql/logs
 sql/.user.yml
 
+__pycache__/
 
 .data/*.parquet
 data/

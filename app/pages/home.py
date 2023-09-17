@@ -8,6 +8,7 @@ import plotly.express as px
 from dash import (Input, Output, State, callback, dash_table, dcc, exceptions,
                   html, no_update)
 from sqlalchemy import create_engine, text
+import dash_cool_components
 
 dash.register_page(__name__, path="/")
 
@@ -16,25 +17,27 @@ DEFAULT_KEYWORDS = ["japan", "afghanistan"]
 
 # SQL QUERIES
 SQL_CONTENT_QUERY = "select * from monthly_content_counts_vw;"
-SQL_UNIQUE_WORDS_QUERY = "select distinct word from word_headlines_vw order by word;"
-SQL_KEYWORD_QUERY = """
-    select word, year_month, count(headline) as num_words
-    from word_headlines_vw
-    where word in :wordlist
-    group by year_month, word;
-"""
 SQL_HEADLINES_QUERY = """
-    select headline from word_headlines_vw
-    where word = :keyword and year_month = :year_month;
+    select headline from headlines
+    where textsearchable_index_col @@ to_tsquery('simple', :keyword) and year_month = :year_month;
+"""
+SQL_FULL_TEXT_SEARCH = """
+    select year_month, count(headline) as num_headlines
+    from headlines
+    where textsearchable_index_col @@ to_tsquery('simple', :word)
+    group by year_month;
 """
 
 # INTRODUCTORY TEXT
 WORD_COUNTS_TEXT = """
 #### What is the NYT writing about?
 
-Use the multi-select dropdown below to view the occurences of different words over the 
-past 25 years. By clicking on a trace in the graph, headlines containing the given word 
+Use the input box below to view the occurences of different words over the 
+past 25 years. By clicking on a trace in the graph, headlines containing the given word
 during that timeperiod can be sampled.
+
+*Note: Sample search terms have been pre-loaded, adding terms to the input box will reset these.
+Any multi-word search terms will be ignored.*
 """
 
 
@@ -64,7 +67,6 @@ engine = create_engine(db_url, pool_pre_ping=True, pool_recycle=3600)
 
 # Load and preprocess data
 content_monthly = execute_query(engine, SQL_CONTENT_QUERY)
-unique_words = execute_query(engine, SQL_UNIQUE_WORDS_QUERY)["word"].tolist()
 
 total_volume = html.Div(
     [
@@ -87,11 +89,37 @@ total_volume = html.Div(
 
 layout = html.Div(children=[
     dcc.Markdown(WORD_COUNTS_TEXT),
-    dcc.Dropdown(
-        unique_words,
-        multi=True,
-        id="word-dropdown",
-        value=DEFAULT_KEYWORDS
+    dash_cool_components.TagInput(
+        id="word-tags",
+        wrapperStyle={
+            'position':'relative',
+            'padding': '0px',
+            'transform':'translate(0,0)',
+            'left': 0,
+            'box-sizing': 'border-box',
+            'background-color': '#fff',
+            'border-color': '#d9d9d9',
+            'box-shadow': 'none',
+        },
+        inputStyle={
+            'background-color': '#fff',
+            'border': '1px solid #ccc'
+        },
+        placeholder="Enter search terms..",
+        tagStyle={
+            'display': 'inline-block',
+            'font-family': 'Roboto,Arial,sans-serif',
+            'background-color': 'rgba(0,126,255,.08)',
+            'color': '#007eff',
+            'border-bottom-right-radius': '2px',
+            'border-top-right-radius': '2px',
+            'font-size': '1rem',
+            'padding': '2px 5px'
+        },
+        tagDeleteStyle = {
+            'color': '#007eff'
+        },
+        value=[{"index": 0, "displayValue": "trump"}, {"index": 1, "displayValue": "obama"}]
     ),
     dcc.Graph(id="word-counts"),
     dcc.Markdown(id="table-intro"),
@@ -109,8 +137,16 @@ layout = html.Div(children=[
 ])
 
 @callback(
+    Output("word-tags", "value"),
+    Input("word-tags", "value")
+)
+def update_tags(value):
+    return [tag for tag in value if len(tag["displayValue"].split(" ")) == 1]
+
+
+@callback(
     Output("word-counts", "figure"), 
-    Input("word-dropdown", "value")
+    Input("word-tags", "value")
 )
 def update_keyword_monthly(value):
     """Updates the keyword figure showing the monthly count of headlines containing each
@@ -119,7 +155,20 @@ def update_keyword_monthly(value):
 
     if not value:
         return no_update
-    result_df = execute_query(engine, SQL_KEYWORD_QUERY, wordlist=tuple(value))
+
+    tags = [e['displayValue'] for e in value]
+
+    df_list = []
+    for word in tags:
+        if len(word.split(" ")) > 1: 
+            continue
+        result = execute_query(engine, SQL_FULL_TEXT_SEARCH, word=word)
+        result['word'] = word 
+        df_list.append(result)
+    result_df = pd.concat(df_list)
+    
+    if result_df.empty:
+        raise exceptions.PreventUpdate("No matching headlines found!")
 
     full_date_range = pd.date_range(
         start=result_df["year_month"].min(),
@@ -131,22 +180,22 @@ def update_keyword_monthly(value):
         lambda g: (
             g.reindex(full_date_range, fill_value=0)
             .rename_axis("year_month"))
-    )[["num_words"]].reset_index()
+    )[["num_headlines"]].reset_index()
     
     fig = px.line(
         dff,
         x="year_month",
-        y="num_words",
+        y="num_headlines",
         color="word",
         title="Number of headlines containing keyword",
         labels={
             "year_month": "Month", 
-            "num_words": "Number of occurrences", 
+            "num_headlines": "Number of headlines", 
             "word": "Word"
         },
         line_shape="spline",
         color_discrete_sequence=px.colors.qualitative.Bold,
-        category_orders={"word": value},
+        category_orders={"word": tags},
         render_mode="svg")
     fig.update_traces(
         hovertemplate="<br>".join(["Month: %{x|%B %Y}", "Number of occurrences: %{y}"])

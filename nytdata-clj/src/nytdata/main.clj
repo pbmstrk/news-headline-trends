@@ -69,6 +69,5 @@
       (Thread/sleep 12000))
     (when (seq ym-seq)
       (println "Refreshing materialized views")
-      (jdbc/execute! ds ["refresh materialized view monthly_content_counts_vw"])
-      (jdbc/execute! ds ["refresh materialized view word_headlines_vw"]))))
+      (jdbc/execute! ds ["refresh materialized view monthly_content_counts_vw"]))))
 

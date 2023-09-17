@@ -7,3 +7,4 @@ dash_bootstrap_templates
 gunicorn
 sqlalchemy
 psycopg2-binary
+dash-cool-components
