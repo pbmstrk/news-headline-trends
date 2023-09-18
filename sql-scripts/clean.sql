@@ -1,1 +1,1 @@
-drop table if exists process_log, headlines cascade;
+DROP TABLE IF EXISTS process_log, headlines CASCADE;

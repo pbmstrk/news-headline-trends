@@ -1,21 +1,26 @@
-create table if not exists headlines (
-    uri text not null,
-    headline text not null,
-    year_month text not null,
-    section_name text not null,
-    textsearchable_index_col tsvector generated always as (to_tsvector('simple', lower(headline))) stored,
-    PRIMARY KEY (uri)
+CREATE TABLE IF NOT EXISTS headlines (
+  uri text NOT NULL,
+  headline text NOT NULL,
+  year_month text NOT NULL,
+  section_name text NOT NULL,
+  textsearchable_index_col tsvector GENERATED ALWAYS AS (
+    to_tsvector('simple', lower(headline))
+  ) STORED,
+  PRIMARY KEY (uri)
 );
 
-create index textsearch_idx on headlines using GIN (textsearchable_index_col);
+CREATE INDEX textsearch_idx ON headlines USING gin (textsearchable_index_col);
 
-create materialized view monthly_content_counts_vw as (
-    select year_month, section_name, count(*) as num_articles
-    from headlines
-    group by year_month, section_name
+CREATE MATERIALIZED VIEW monthly_content_counts_vw AS (
+  SELECT
+    year_month,
+    section_name,
+    count(*) AS num_articles
+  FROM headlines
+  GROUP BY year_month, section_name
 );
 
-create table if not exists process_log (
-    year_month text unique not null,
-    num integer not null check (num > 0)
+CREATE TABLE IF NOT EXISTS process_log (
+  year_month text UNIQUE NOT NULL,
+  num integer NOT NULL CHECK (num > 0)
 );
