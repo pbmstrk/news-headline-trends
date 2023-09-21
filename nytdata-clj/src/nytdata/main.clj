@@ -2,11 +2,11 @@
   (:gen-class)
   (:require [clj-http.client :as client]
             [clojure.string :as str]
+            [clojure.tools.cli :as cli]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as sql]
             [nytdata.utils.date :as date-utils]
-            [nytdata.utils.db :as db-utils]
-            [clojure.tools.cli :as cli]))
+            [nytdata.utils.db :as db-utils]))
 
 (defn construct-nyt-api-url
   "Create the URL for the http request based on year-month string."
@@ -31,13 +31,14 @@
 (defn extract-metadata [doc]
   ((juxt :uri
          (comp :main :headline)
-         (comp (partial date-utils/extract-year-month-from-timestamp) :pub_date)
+         :pub_date
+         :web_url
          :section_name)
    doc))
 
 (defn insert-headlines!
   [ds docs]
-  (let [query "INSERT INTO headlines (uri, headline, year_month, section_name) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING"]
+  (let [query "INSERT INTO headlines (uri, headline, pub_date, web_url, section_name) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"]
     (jdbc/execute-batch! ds query (map extract-metadata docs) {})))
 
 (defn process-month [ds ym api-key]
