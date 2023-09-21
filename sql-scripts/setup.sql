@@ -28,3 +28,10 @@ CREATE TABLE IF NOT EXISTS process_log (
   year_month text UNIQUE NOT NULL,
   num integer NOT NULL CHECK (num > 0)
 );
+
+CREATE OR REPLACE FUNCTION convert_to_hyperlink(label text, destination text)
+RETURNS text AS $$
+BEGIN
+    RETURN '<a href="' || destination || '" target="_blank">' || label || '</a>';
+END;
+$$ LANGUAGE plpgsql;
