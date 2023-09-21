@@ -6,7 +6,7 @@
   "Calculate a sequence of year-month strings from the given start-date up to the last completed month."
   [start-date]
   (let [start-ym (-> (YearMonth/parse start-date
-                                  (DateTimeFormatter/ofPattern "yyyy-M"))
+                                      (DateTimeFormatter/ofPattern "yyyy-M"))
                      (.plusMonths 1))
         current-ym (-> (LocalDate/now)
                        (.minusMonths 1)                     ;; Go back one month to get the last complete month
@@ -15,6 +15,3 @@
          (take-while #(not (.isAfter % current-ym)))
          (map #(.format % (DateTimeFormatter/ofPattern "yyyy-M")))
          (into []))))
-
-(defn extract-year-month-from-timestamp [timestamp]
-  (subs timestamp 0 7))

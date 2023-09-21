@@ -1,10 +1,14 @@
 CREATE TABLE IF NOT EXISTS headlines (
   uri text NOT NULL,
   headline text NOT NULL,
-  year_month text NOT NULL,
+  pub_date text NOT NULL,
+  web_url text NOT NULL,
   section_name text NOT NULL,
   textsearchable_index_col tsvector GENERATED ALWAYS AS (
     to_tsvector('simple', lower(headline))
+  ) STORED,
+  year_month text GENERATED ALWAYS AS (
+    substring(pub_date, 1, 7)
   ) STORED,
   PRIMARY KEY (uri)
 );

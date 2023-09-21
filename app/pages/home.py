@@ -18,7 +18,10 @@ DEFAULT_KEYWORDS = ["japan", "afghanistan"]
 # SQL QUERIES
 SQL_CONTENT_QUERY = "select * from monthly_content_counts_vw;"
 SQL_HEADLINES_QUERY = """
-    select headline from headlines
+    select 
+        convert_to_hyperlink(headline, web_url) as headline,
+        to_char(cast(pub_date as timestamp), 'yyyy-mm-dd') as pub_date
+    from headlines
     where textsearchable_index_col @@ to_tsquery('simple', :keyword) and year_month = :year_month;
 """
 SQL_FULL_TEXT_SEARCH = """
@@ -127,11 +130,16 @@ layout = html.Div(children=[
         [],
         id="example-headlines",
         style_cell={'textAlign': 'left'},
+        style_data={
+            'whiteSpace': 'normal',
+            'height': 'auto',
+        },
         style_header={
             'backgroundColor': 'white',
             'fontWeight': 'bold'
         },
         style_as_list_view=True,
+        markdown_options={"html": True},
         style_table={"margin-bottom": "20px"}),
     total_volume
 ])
@@ -205,7 +213,9 @@ def update_keyword_monthly(value):
 
 
 @callback(
-    [Output("example-headlines", "data"), Output("table-intro", "children")],
+    [Output("example-headlines", "data"), 
+     Output("example-headlines", "columns"),
+     Output("table-intro", "children")],
     [Input("word-counts", "clickData")],
     [State("word-counts", "figure")]
 )
@@ -223,8 +233,13 @@ def update_stories(clickData, figure):
     )
     sample = result.sample(min(5, result.shape[0]))
 
+    table_columns = [
+        {"id": "headline", "name": "Headline", "presentation": "markdown"},
+        {"id": "pub_date", "name": "Publication Date"},
+    ]
+
     text = f"Example headlines containing: **{keyword}**"
-    return [sample.to_dict("records"), text]
+    return [sample.to_dict("records"), table_columns, text]
 
 
 @callback(
