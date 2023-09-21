@@ -8,14 +8,11 @@
             [nytdata.utils.db :as db-utils]
             [clojure.tools.cli :as cli]))
 
-(def parameterized-url
-  "https://api.nytimes.com/svc/archive/v1/%s/%s.json")
-
 (defn construct-nyt-api-url
-  "Create the URL for the http request based on a parameterized URL and year-month string."
-  [url year-month]
+  "Create the URL for the http request based on year-month string."
+  [year-month]
   (let [[year month] (str/split year-month #"-")]
-    (format url year month)))
+    (format "https://api.nytimes.com/svc/archive/v1/%s/%s.json" year month)))
 
 (defn extract-articles-from-response
   "Extracts articles from the API response."
@@ -25,7 +22,7 @@
 (defn fetch-nyt-data-for-month
   "Fetches data from the NYT API for a given year and month."
   [year-month api-key]
-  (let [url (construct-nyt-api-url parameterized-url year-month)
+  (let [url (construct-nyt-api-url year-month)
         response (client/get url {:throw-exceptions false :as :json :query-params {:api-key api-key}})]
     (if (= 200 (:status response))
       (extract-articles-from-response response)
