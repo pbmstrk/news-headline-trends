@@ -10,8 +10,6 @@
 
 (def parameterized-url
   "https://api.nytimes.com/svc/archive/v1/%s/%s.json")
-(def api-key
-  (System/getenv "nyt_api_key"))
 
 (defn construct-nyt-api-url
   "Create the URL for the http request based on a parameterized URL and year-month string."
@@ -26,9 +24,9 @@
 
 (defn fetch-nyt-data-for-month
   "Fetches data from the NYT API for a given year and month."
-  [year-month]
+  [year-month api-key]
   (let [url (construct-nyt-api-url parameterized-url year-month)
-        response (client/get url {:throw-exceptions false :as :json :query-params {"api-key" api-key}})]
+        response (client/get url {:throw-exceptions false :as :json :query-params {:api-key api-key}})]
     (if (= 200 (:status response))
       (extract-articles-from-response response)
       (throw (Exception. (str "Failed to fetch data for " year-month ": " (:status response)))))))
@@ -45,9 +43,9 @@
   (let [query "INSERT INTO headlines (uri, headline, year_month, section_name) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING"]
     (jdbc/execute-batch! ds query (map extract-metadata docs) {})))
 
-(defn process-month [ds ym]
+(defn process-month [ds ym api-key]
   (println (str "Fetching data for month: " ym))
-  (let [docs (fetch-nyt-data-for-month ym)
+  (let [docs (fetch-nyt-data-for-month ym api-key)
         num-docs (count docs)]
     (println (str "\tNumber of records: " num-docs))
     (insert-headlines! ds docs)
@@ -59,13 +57,14 @@
     :default "1996-12"]])
 
 (defn -main [& args]
-  (let [default-start (-> (cli/parse-opts args cli-options) :options :start-date)
+  (let [api-key (System/getenv "nyt_api_key")
+        default-start (-> (cli/parse-opts args cli-options) :options :start-date)
         ds (db-utils/get-datasource-from-env)
         latest-ym (db-utils/get-latest-processed-month ds default-start)
         ym-seq (date-utils/year-month-sequence latest-ym)]
     (println (str "Processing months: " ym-seq))
     (doseq [ym ym-seq]
-      (process-month ds ym)
+      (process-month ds ym api-key)
       (Thread/sleep 12000))
     (when (seq ym-seq)
       (println "Refreshing materialized views")
