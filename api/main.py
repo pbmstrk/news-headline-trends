@@ -5,7 +5,11 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 # Constants
-ORIGINS = ["http://localhost:5173"]
+ORIGINS = [
+    "http://localhost:5173",
+    "https://news-headline-trends.vercel.app",
+    "https://news-headline-trends-pauls-projects-d8f1b52c.vercel.app",
+]
 SQL_HEADLINES_QUERY = """
     select 
         headline, web_url,
