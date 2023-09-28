@@ -5,7 +5,7 @@ function Table({ sampleData }) {
 
     useEffect(() => {
         if (sampleData) {
-            fetch(`http://127.0.0.1:8000/samples?keyword=${sampleData.keyword}&year_month=${sampleData.year_month}`)
+            fetch(`https://news-headline-trends-production.up.railway.app/samples?keyword=${sampleData.keyword}&year_month=${sampleData.year_month}`)
                 .then(response => response.json())
                 .then(data => {
                     setTableData(data);
