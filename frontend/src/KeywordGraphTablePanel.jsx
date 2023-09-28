@@ -9,7 +9,7 @@ function KeywordGraphTablePanel() {
     const [sampleData, setSampleData] = useState(null);
 
     const fetchData = (keywordsToFetch) => {
-        fetch(`https://news-headline-trends-production.up.railway.app/occurrences?keywords=${keywordsToFetch.join(",")}`)
+        fetch(`https://news-headline-trends-api.onrender.com/occurrences?keywords=${keywordsToFetch.join(",")}`)
             .then(response => response.json())
             .then(data => {
                 setGraphData(data);
