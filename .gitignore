@@ -17,7 +17,6 @@ data/
 *.exe
 *.ipynb
 *.duckdb
-*.json
 *.egg-info
 
 .clj-kondo/
