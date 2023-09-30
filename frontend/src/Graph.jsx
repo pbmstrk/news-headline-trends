@@ -49,7 +49,7 @@ function Graph({ graphData, setSampleData }) {
                 yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
                 axisTop={null}
                 axisRight={null}
-                curve="cardinal"
+                curve="monotoneX"
                 axisBottom={{
                     format: "%b %Y",
                     tickValues: tickInterval,
