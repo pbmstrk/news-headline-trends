@@ -8,8 +8,10 @@ function KeywordGraphTablePanel() {
     const [graphData, setGraphData] = useState(null);
     const [sampleData, setSampleData] = useState(null);
 
+    let apiURL = process.env("API_URL");
+
     const fetchData = (keywordsToFetch) => {
-        fetch(`https://news-headline-trends-api.onrender.com/occurrences?keywords=${keywordsToFetch.join(",")}`)
+        fetch(`${apiURL}/occurrences?keywords=${keywordsToFetch.join(",")}`)
             .then(response => response.json())
             .then(data => {
                 setGraphData(data);

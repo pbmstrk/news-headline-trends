@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 function Table({ sampleData }) {
     const [tableData, setTableData] = useState(null);
 
+    let apiURL = process.env("API_URL");
+
     useEffect(() => {
         if (sampleData) {
-            fetch(`https://news-headline-trends-api.onrender.com/samples?keyword=${sampleData.keyword}&year_month=${sampleData.year_month}`)
+            fetch(`${apiURL}/samples?keyword=${sampleData.keyword}&year_month=${sampleData.year_month}`)
                 .then(response => response.json())
                 .then(data => {
                     setTableData(data);
