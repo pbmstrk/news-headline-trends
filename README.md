@@ -1,46 +1,62 @@
 # News Headline Trends
 
-[**news-headline-trends**](https://news-headline-trends.fly.dev) is a [Dash](https://dash.plotly.com) application that visualizes and analyzes data related to word occurences in New York Times headlines. 
+[**news-headline-trends**](https://news-headline-trends.vercel.app) is an application that visualizes and analyzes data related to word occurences in New York Times headlines. 
 
 The app consists of the two mains features:
 1. **Word occurence visualisation**: View line graphs displaying the number of headlines containing the selected keywords over time.
 2. **Headline sampling**: Headlines that contain a given keyword can be sampled by clicking on a trace in the graph.
 
-## Setup and Usage
+## Local setup and usage
 
 ### Prerequisites
 
 1. Sign up for an API key on the [New York Times Developer Network](https://developer.nytimes.com)
-2. Create a Postgres database (locally or in the cloud)
 
-> The Clojure code used to fetch data from the API requires two environment variables to be set: `nyt_api_key` and `database_url`.
+### Database setup
 
-### Load data
+2. Create a PostgreSQL database.
 
-4. Create the tables in the database using the [setup.sql](sql-scripts/setup.sql) script. If you're using `psql` run:
+3. Set up the required database objects (like tables, views, etc.) by running: 
 
 ```bash 
 psql {db-connection-string} -f sql-scripts/setup.sql 
 ```
 
-5. Run the Clojure script to load the data (the code can be run using either `clj` or Docker). Navigate to the `nytdata-clj` directory and run:
+### Data loading
 
-Using `clj`:
+4. Navigate to the `nytdata-clj` directory.
+
+5. Set the environment variables `nyt_api_key` and `database_url` for the Clojure script.
+
+6. Run the Clojure script to fetch and load data. You can use either `clj`:
 
 ```bash 
 clj -M -m nytdata.main
 ```
 
-Using Docker:
+Or Docker:
 
-```
+```bash
 docker build -t nytdata-clj .
 docker run  --rm --env-file {env-file} nytdata-clj
 ```
 
-### Run the app
+### API setup
 
-6. Run the app by either running the Python script directly (`python app/app.py`) or building and running the Docker container.
+7. Install the requirements using `pip install -r api/requirements.txt` (the use of a virtual environment is recommended). Then set the `DATABASE_URL` environment variable.
 
+8. Start the API by running
 
-> The app requires the `DATABASE_URL` environment variable to be set.
+```bash
+uvicorn main:app
+```
+
+### Running the app
+
+9. Navigate to the frontend directory and install the dependencies by running `npm install`.
+
+10. Launch the development server,
+
+```bash
+npm run dev
+```
