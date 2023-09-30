@@ -8,7 +8,7 @@ function KeywordGraphTablePanel() {
     const [graphData, setGraphData] = useState(null);
     const [sampleData, setSampleData] = useState(null);
 
-    let apiURL = process.env("API_URL");
+    let apiURL = import.meta.env.VITE_API_URL;
 
     const fetchData = (keywordsToFetch) => {
         fetch(`${apiURL}/occurrences?keywords=${keywordsToFetch.join(",")}`)

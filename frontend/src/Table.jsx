@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 function Table({ sampleData }) {
     const [tableData, setTableData] = useState(null);
 
-    let apiURL = process.env("API_URL");
+    let apiURL = import.meta.env.VITE_API_URL;
+    console.log(`${apiURL}/samples?keyword=${sampleData.keyword}&year_month=${sampleData.year_month}`)
 
     useEffect(() => {
         if (sampleData) {
