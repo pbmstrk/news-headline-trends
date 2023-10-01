@@ -1,8 +1,12 @@
 import os
 import pandas as pd
 from sqlalchemy import create_engine, text, Engine
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 
 # Constants
 ORIGINS = [
@@ -49,8 +53,10 @@ def create_db_engine() -> Engine:
     db_url = fetch_database_url()
     return create_engine(db_url, pool_pre_ping=True, pool_recycle=3600)
 
-
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -62,7 +68,8 @@ app.add_middleware(
 
 
 @app.get("/samples")
-def get_sample(year_month: str, keyword: str, engine: Engine = Depends(create_db_engine)):
+@limiter.limit("300/minute")
+def get_sample(request: Request, year_month: str, keyword: str, engine: Engine = Depends(create_db_engine)):
     """Retrieve a sample of headlines from the database based on a given year-month and keyword.
 
     The function searches the headlines database for records that match the specified `year_month` 
@@ -91,7 +98,8 @@ def fill_missing_months(df: pd.DataFrame, date_range: list[str]) -> pd.DataFrame
 
 
 @app.get("/occurrences")
-def get_occurences(keywords: str, engine: Engine = Depends(create_db_engine)):
+@limiter.limit("300/minute")
+def get_occurences(request: Request, keywords: str, engine: Engine = Depends(create_db_engine)):
     tags = keywords.split(",")
     df_list = [query_occurrences(tag, engine) for tag in tags]
     result_df = pd.concat([df[0] for df in df_list])
