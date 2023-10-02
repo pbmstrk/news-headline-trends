@@ -1,18 +1,6 @@
 import { ResponsiveLine } from '@nivo/line';
 import { useWindowSize } from 'react-use';
 
-const CustomTooltip = ({ point }) => {
-    const data = point.data;
-
-    return (
-        <div style={{ background: 'white', padding: '10px', border: '1px solid #ccc' }}>
-            <strong>{point.serieId}</strong><br />
-            <strong>Month:</strong> {data.x.toLocaleDateString()}<br />
-            <strong>Number of occurences:</strong> {data.y}
-        </div>
-    );
-};
-
 function formatDate(date) {
     var year = date.toLocaleString("default", { year: "numeric" });
     var month = date.toLocaleString("default", { month: "2-digit" });
@@ -20,7 +8,17 @@ function formatDate(date) {
     return year + "-" + month
 }
 
+const CustomTooltip = ({ point }) => {
+    const data = point.data;
 
+    return (
+        <div style={{ background: 'white', padding: '10px', border: '1px solid #ccc' }}>
+            <strong>{point.serieId}</strong><br />
+            <strong>Month:</strong> {formatDate(data.x)}<br />
+            <strong>Number of occurences:</strong> {data.y}
+        </div>
+    );
+};
 
 function Graph({ graphData, setSampleData }) {
 
