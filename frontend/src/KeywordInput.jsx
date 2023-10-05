@@ -16,8 +16,8 @@ function KeywordInput({ keywords, setKeywords }) {
                 setWarning('Multi-word keywords are not supported'); // Set warning for multi-word keyword
                 return;
             }
-            if (!keywords.includes(inputValue)) {
-                setKeywords([...keywords, inputValue]);
+            if (!keywords.includes(inputValue.toLowerCase())) {
+                setKeywords([...keywords, inputValue.toLowerCase()]);
             }
             setInputValue('');
         } else if (event.key === 'Backspace' && !inputValue && keywords.length > 0) {
