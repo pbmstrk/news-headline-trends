@@ -2,16 +2,29 @@
   (:import (java.time LocalDate YearMonth)
            (java.time.format DateTimeFormatter)))
 
+(defn- format-year-month
+  "Convert a YearMonth instance to a string, optionally using a provided pattern."
+  ([year-month] (format-year-month year-month (DateTimeFormatter/ofPattern "yyyy-M")))
+  ([year-month pattern] (.format year-month pattern)))
+
+(defn- parse-year-month
+  "Parse a month string into a YearMonth instance, optionally using a provided pattern."
+  ([month-string] (parse-year-month month-string (DateTimeFormatter/ofPattern "yyyy-M")))
+  ([month-string pattern] (YearMonth/parse month-string pattern)))
+
+(defn add-month
+  "Increment the provided month string by one month."
+  [month]
+  (when month
+    (-> (parse-year-month month)
+        (.plusMonths 1)
+        format-year-month)))
+
 (defn year-month-sequence
-  "Calculate a sequence of year-month strings from the given start-date up to the last completed month."
-  [start-date]
-  (let [start-ym (-> (YearMonth/parse start-date
-                                      (DateTimeFormatter/ofPattern "yyyy-M"))
-                     (.plusMonths 1))
-        current-ym (-> (LocalDate/now)
-                       (.minusMonths 1)                     ;; Go back one month to get the last complete month
-                       (YearMonth/from))]
-    (->> (iterate #(.plusMonths % 1) start-ym)
-         (take-while #(not (.isAfter % current-ym)))
-         (map #(.format % (DateTimeFormatter/ofPattern "yyyy-M")))
-         (into []))))
+  "Calculate a sequence of year-month strings from the given start-month
+   up to the end-month or last completed month."
+  ([start-month] (year-month-sequence start-month (-> (LocalDate/now) (.minusMonths 1) (format-year-month))))
+  ([start-month end-month] (->> (iterate #(.plusMonths % 1) (parse-year-month start-month))
+                                (take-while #(not (.isAfter % (parse-year-month end-month))))
+                                (map #(.format % (DateTimeFormatter/ofPattern "yyyy-M")))
+                                (into []))))

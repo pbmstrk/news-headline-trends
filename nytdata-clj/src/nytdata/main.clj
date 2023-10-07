@@ -53,14 +53,15 @@
 
 (def cli-options
   [["-s" "--start-date START-DATE" "Default start date"
-    :default "1996-12"]])
+    :default "1997-1"]])
 
 (defn -main [& args]
   (let [api-key (System/getenv "nyt_api_key")
-        default-start (-> (cli/parse-opts args cli-options) :options :start-date)
         ds (db-utils/get-datasource-from-env)
-        latest-ym (db-utils/get-latest-processed-month ds default-start)
-        ym-seq (date-utils/year-month-sequence latest-ym)]
+        default-start (-> (cli/parse-opts args cli-options) :options :start-date)
+        last-processed-month (db-utils/get-latest-processed-month ds)
+        start-month (or (date-utils/add-month last-processed-month) default-start)
+        ym-seq (date-utils/year-month-sequence start-month)]
     (log/info "Processing months: " ym-seq)
     (doseq [ym ym-seq]
       (process-month ds ym api-key)

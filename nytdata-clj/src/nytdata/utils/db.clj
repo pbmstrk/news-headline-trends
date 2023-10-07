@@ -6,8 +6,6 @@
   (let [database-url  (System/getenv "database_url")]
     (jdbc/get-datasource database-url)))
 
-(defn get-latest-processed-month [ds default]
+(defn get-latest-processed-month [ds]
   (let [record (sql/query ds ["select max(year_month) from process_log"])]
-    (if-let [ym (-> record first :max)]
-      ym
-      default)))
+    (-> record first :max)))
