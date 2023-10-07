@@ -26,7 +26,7 @@ psql {db-connection-string} -f sql-scripts/setup.sql
 
 4. Navigate to the `nytdata-clj` directory.
 
-5. Set the environment variables `nyt_api_key` and `database_url` for the Clojure script.
+5. Set the environment variables `nyt_api_key` and `jdbc_database_url` for the Clojure script.
 
 6. Run the Clojure script to fetch and load data. You can use either `clj`:
 

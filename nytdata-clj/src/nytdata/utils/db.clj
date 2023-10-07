@@ -3,7 +3,7 @@
             [next.jdbc.sql :as sql]))
 
 (defn get-datasource-from-env []
-  (let [database-url  (System/getenv "database_url")]
+  (let [database-url  (System/getenv "jdbc_database_url")]
     (jdbc/get-datasource database-url)))
 
 (defn get-latest-processed-month [ds]
