@@ -9,7 +9,9 @@ function Footer() {
 
   return (
     <div className="flex justify-between items-center my-4 px-10">
-      <img src={nytLogo} alt="NYT logo" className="h-10 w-auto" />
+      <a href="https://developer.nytimes.com" target="_blank" rel="noopener noreferrer">
+        <img src={nytLogo} alt="NYT logo" className="h-10 w-auto" />
+      </a>
       <a
         href={repoLink}
         target="_blank"
