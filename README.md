@@ -1,6 +1,6 @@
 # News Headline Trends
 
-[**news-headline-trends**](https://news-headline-trends.vercel.app) is an application that visualizes and analyzes data related to word occurences in New York Times headlines. 
+[**news-headline-trends**](https://news-headline-trends.vercel.app) visualizes data related to word occurences in New York Times headlines. 
 
 The app consists of the two mains features:
 1. **Word occurence visualisation**: View line graphs displaying the number of headlines containing the selected keywords over time.
@@ -54,6 +54,8 @@ uvicorn main:app
 ### Running the app
 
 9. Navigate to the frontend directory and install the dependencies by running `npm install`.
+
+10. Set the `VITE_API_URL` environment variable.
 
 10. Launch the development server,
 
