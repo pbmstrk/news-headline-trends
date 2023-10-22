@@ -27,8 +27,8 @@ function Footer() {
 function About() {
   return (
     <div>
-      <h2 className='text-3xl font-semibold mb-2'>What is the NYT writing about?</h2>
-      <p>Use the input box below to view the occurences of different words over the past 25 years. By clicking on a trace in the graph, headlines containing the given word during that timeperiod can be sampled.</p>
+      <h2 className='text-3xl font-semibold mb-2'>What is <i>The New York Times</i> writing about?</h2>
+      <p>Use the input box below to view the occurences of different words over the past 25 years. By clicking on a trace in the graph, headlines containing the given word during that time period can be sampled.</p>
     </div>
   )
 }
