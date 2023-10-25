@@ -12,6 +12,7 @@
 (defn construct-nyt-api-url
   "Create the URL for the http request based on year-month string."
   [year-month]
+  (assert (some? year-month))
   (let [[year month] (str/split year-month #"-")]
     (format "https://api.nytimes.com/svc/archive/v1/%s/%s.json" year month)))
 
@@ -50,10 +51,14 @@
     (insert-headlines! ds docs)
     (sql/insert! ds :process_log {:year_month ym :num num-docs})))
 
-
 (def cli-options
   [["-s" "--start-date START-DATE" "Default start date"
     :default "1997-1"]])
+
+(defn get-start-date
+  "Extracts the start date from the provided command line arguments."
+  [args cli-options]
+  (get-in (cli/parse-opts args cli-options) [:options :start-date]))
 
 (defn -main [& args]
   (let [api-key (System/getenv "nyt_api_key")
