@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/rs/cors"
 	"gorm.io/driver/postgres"
@@ -85,6 +86,43 @@ func getSample(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+func padDates(occurrences []YearMonthOccurrence) []YearMonthOccurrence {
+	paddedOccurrences := []YearMonthOccurrence{}
+	if len(occurrences) == 0 {
+		return paddedOccurrences
+	}
+
+	prevMonth, err := time.Parse("2006-01", occurrences[0].YearMonth)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	paddedOccurrences = append(paddedOccurrences, occurrences[0])
+
+	for i := 1; i < len(occurrences); i++ {
+		curMonth, err := time.Parse("2006-01", occurrences[i].YearMonth)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		monthDiff := int(curMonth.Sub(prevMonth).Hours() / 24 / 30)
+		if monthDiff > 1 {
+			for j := 1; j < monthDiff; j++ {
+				gapMonth := prevMonth.AddDate(0, j, 0)
+				paddedOccurrences = append(paddedOccurrences, YearMonthOccurrence{
+					YearMonth:    gapMonth.Format("2006-01"),
+					NumHeadlines: 0,
+				})
+			}
+		}
+
+		paddedOccurrences = append(paddedOccurrences, occurrences[i])
+		prevMonth = curMonth
+	}
+
+	return paddedOccurrences
+}
+
 func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
 	db := getDB()
 
@@ -100,7 +138,7 @@ func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
 		db.Raw(KEYWORD_OCCURRENCE_QUERY, keyword).Scan(&dbResults)
 		occurrences = append(occurrences, KeywordOccurrence{
 			Keyword:     keyword,
-			Occurrences: dbResults,
+			Occurrences: padDates(dbResults),
 		})
 	}
 
