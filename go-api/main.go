@@ -14,6 +14,7 @@ import (
 	"github.com/rs/cors"
 )
 
+// Constants for SQL queries to retrieve data from the database.
 const sampleHeadlinesQuery = `
 select 
     headline, web_url,
@@ -31,17 +32,20 @@ group by year_month
 order by year_month;
 `
 
+// KeywordSample represents a sample of a news headline including the headline text, its URL, and publication date.
 type KeywordSample struct {
 	Headline string `json:"headline" db:"headline"`
 	WebUrl   string `json:"web_url" db:"web_url"`
 	PubDate  string `json:"pub_date" db:"pub_date"`
 }
 
+// YearMonthOccurrence represents the number of headlines for a given year and month.
 type YearMonthOccurrence struct {
 	YearMonth    string `json:"x" db:"year_month"`
 	NumHeadlines int    `json:"y" db:"num_headlines"`
 }
 
+// KeywordOccurrence holds the occurrences of a keyword in headlines over a series of months.
 type KeywordOccurrence struct {
 	Keyword     string                `json:"id"`
 	Occurrences []YearMonthOccurrence `json:"data"`
@@ -49,6 +53,7 @@ type KeywordOccurrence struct {
 
 var db *sqlx.DB
 
+// initDB initializes the connection to the database and is called before the server starts.
 func initDB() error {
 	host := "localhost"
 	user := "postgres"
@@ -69,6 +74,7 @@ func handleError(w http.ResponseWriter, err error, statusCode int) {
 	http.Error(w, http.StatusText(statusCode), statusCode)
 }
 
+// getSample handles HTTP requests to retrieve a random sample of headlines for a given keyword and year/month.
 func getSample(w http.ResponseWriter, r *http.Request) {
 
 	keyword := r.URL.Query().Get("keyword")
@@ -129,6 +135,7 @@ func padDates(occurrences []YearMonthOccurrence) ([]YearMonthOccurrence, error) 
 	return paddedOccurrences, nil
 }
 
+// getKeywordOccurences handles HTTP requests to retrieve the number of occurrences of each keyword by year and month.
 func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
 
 	queryKeywords := r.URL.Query().Get("keywords")
@@ -179,5 +186,8 @@ func main() {
 
 	handler := c.Handler(mux)
 
-	http.ListenAndServe(":3333", handler)
+	err = http.ListenAndServe(":3333", handler)
+	if err != nil {
+		log.Fatalf("failed to start server: %v", err)
+	}
 }
