@@ -9,36 +9,37 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/rs/cors"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
-const SAMPLE_HEADLINES_QUERY = `
+const sampleHeadlinesQuery = `
 select 
     headline, web_url,
     to_char(cast(pub_date as timestamp), 'yyyy-mm-dd') as pub_date
 from headlines
-where textsearchable_index_col @@ to_tsquery('simple', ?) and year_month = ?;
+where textsearchable_index_col @@ to_tsquery('simple', $1) and year_month = $2;
 `
-const KEYWORD_OCCURRENCE_QUERY = `
+const keyOccurrenceQuery = `
 select 
 	year_month,
 	count(headline) as num_headlines
 from headlines
-where textsearchable_index_col @@ to_tsquery('simple', ?)
+where textsearchable_index_col @@ to_tsquery('simple', $1)
 group by year_month
 order by year_month;
 `
 
 type KeywordSample struct {
-	Headline string `json:"headline"`
-	PubDate  string `json:"pub_date"`
+	Headline string `json:"headline" db:"headline"`
+	WebUrl   string `json:"web_url" db:"web_url"`
+	PubDate  string `json:"pub_date" db:"pub_date"`
 }
 
 type YearMonthOccurrence struct {
-	YearMonth    string `json:"x"`
-	NumHeadlines int    `json:"y"`
+	YearMonth    string `json:"x" db:"year_month"`
+	NumHeadlines int    `json:"y" db:"num_headlines"`
 }
 
 type KeywordOccurrence struct {
@@ -46,30 +47,39 @@ type KeywordOccurrence struct {
 	Occurrences []YearMonthOccurrence `json:"data"`
 }
 
-func getDB() *gorm.DB {
+var db *sqlx.DB
+
+func initDB() error {
 	host := "localhost"
 	user := "postgres"
 	password := "postgres"
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, "5432", user, password, "nytdata_clj")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	var err error
+	db, err = sqlx.Open("postgres", dsn)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("error opening database: %w", err)
 	}
-	return db
+	return nil
+}
+
+func handleError(w http.ResponseWriter, err error, statusCode int) {
+	log.Printf("error: %v", err)
+	http.Error(w, http.StatusText(statusCode), statusCode)
 }
 
 func getSample(w http.ResponseWriter, r *http.Request) {
-	db := getDB()
-
-	dbInstance, _ := db.DB()
-	defer dbInstance.Close()
 
 	keyword := r.URL.Query().Get("keyword")
 	yearMonth := r.URL.Query().Get("year_month")
 
 	samples := []KeywordSample{}
-	db.Raw(SAMPLE_HEADLINES_QUERY, keyword, yearMonth).Scan(&samples)
+	err := db.Select(&samples, sampleHeadlinesQuery, keyword, yearMonth)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
 
 	rand.Shuffle(len(samples), func(i, j int) {
 		samples[i], samples[j] = samples[j], samples[i]
@@ -86,15 +96,15 @@ func getSample(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func padDates(occurrences []YearMonthOccurrence) []YearMonthOccurrence {
+func padDates(occurrences []YearMonthOccurrence) ([]YearMonthOccurrence, error) {
 	paddedOccurrences := []YearMonthOccurrence{}
 	if len(occurrences) == 0 {
-		return paddedOccurrences
+		return paddedOccurrences, nil
 	}
 
 	prevMonth, err := time.Parse("2006-01", occurrences[0].YearMonth)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("error parsing date: %w", err)
 	}
 
 	paddedOccurrences = append(paddedOccurrences, occurrences[0])
@@ -102,7 +112,7 @@ func padDates(occurrences []YearMonthOccurrence) []YearMonthOccurrence {
 	for i := 1; i < len(occurrences); i++ {
 		curMonth, err := time.Parse("2006-01", occurrences[i].YearMonth)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("error parsing date: %w", err)
 		}
 
 		monthDiff := int(curMonth.Sub(prevMonth).Hours() / 24 / 30)
@@ -120,14 +130,10 @@ func padDates(occurrences []YearMonthOccurrence) []YearMonthOccurrence {
 		prevMonth = curMonth
 	}
 
-	return paddedOccurrences
+	return paddedOccurrences, nil
 }
 
 func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
-	db := getDB()
-
-	dbInstance, _ := db.DB()
-	defer dbInstance.Close()
 
 	queryKeywords := r.URL.Query().Get("keywords")
 	keywords := strings.Split(queryKeywords, ",")
@@ -135,16 +141,27 @@ func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
 
 	for _, keyword := range keywords {
 		var dbResults []YearMonthOccurrence
-		db.Raw(KEYWORD_OCCURRENCE_QUERY, keyword).Scan(&dbResults)
+		err := db.Select(&dbResults, keyOccurrenceQuery, keyword)
+		if err != nil {
+			handleError(w, err, http.StatusInternalServerError)
+			return
+		}
+		paddedDbResults, err := padDates(dbResults)
+		if err != nil {
+			handleError(w, err, http.StatusInternalServerError)
+			return
+		}
+
 		occurrences = append(occurrences, KeywordOccurrence{
 			Keyword:     keyword,
-			Occurrences: padDates(dbResults),
+			Occurrences: paddedDbResults,
 		})
 	}
 
 	jsonData, err := json.Marshal(occurrences)
 	if err != nil {
-		log.Fatal(err)
+		handleError(w, err, http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -152,6 +169,14 @@ func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	// Initialize the database connection pool
+	err := initDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/samples", getSample)
 	mux.HandleFunc("/occurrences", getKeywordOccurences)
