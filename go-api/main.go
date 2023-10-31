@@ -88,12 +88,8 @@ func getSample(w http.ResponseWriter, r *http.Request) {
 	sampleSize := min(5, len(samples))
 	sample := samples[:sampleSize]
 
-	jsonData, err := json.Marshal(sample)
-	if err != nil {
-		log.Fatal(err)
-	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonData)
+	json.NewEncoder(w).Encode(sample)
 }
 
 func padDates(occurrences []YearMonthOccurrence) ([]YearMonthOccurrence, error) {
@@ -158,14 +154,8 @@ func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	jsonData, err := json.Marshal(occurrences)
-	if err != nil {
-		handleError(w, err, http.StatusInternalServerError)
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonData)
+	json.NewEncoder(w).Encode(occurrences)
 }
 
 func main() {
