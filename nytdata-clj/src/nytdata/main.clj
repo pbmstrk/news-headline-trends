@@ -13,7 +13,7 @@
   "Create the URL for the http request based on year-month string."
   [year-month]
   (assert (some? year-month))
-  (let [[year month] (str/split year-month #"-")]
+  (let [[year month] (str/split (date-utils/padded-month->month year-month) #"-")]
     (format "https://api.nytimes.com/svc/archive/v1/%s/%s.json" year month)))
 
 (defn extract-articles-from-response
@@ -52,8 +52,7 @@
     (sql/insert! ds :process_log {:year_month ym :num num-docs})))
 
 (def cli-options
-  [["-s" "--start-date START-DATE" "Default start date"
-    :default "1997-1"]])
+  [["-s" "--start-date START-DATE" "Default start date"]])
 
 (defn get-start-date
   "Extracts the start date from the provided command line arguments."
@@ -63,9 +62,13 @@
 (defn -main [& args]
   (let [api-key (System/getenv "nyt_api_key")
         ds (db-utils/get-datasource-from-env)
-        default-start (-> (cli/parse-opts args cli-options) :options :start-date)
+        default-start "1997-01"
+        arg-start (get-start-date args cli-options)
         last-processed-month (db-utils/get-latest-processed-month ds)
-        start-month (or (date-utils/add-month last-processed-month) default-start)
+        start-month (or
+                      arg-start
+                      (date-utils/add-month last-processed-month)
+                      default-start)
         ym-seq (date-utils/year-month-sequence start-month)]
     (log/info "Processing months: " ym-seq)
     (doseq [ym ym-seq]
