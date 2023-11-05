@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import KeywordPill from './KeywordPill';
 
 function KeywordInput({ keywords, setKeywords }) {
     const [inputValue, setInputValue] = useState('');
@@ -37,10 +38,7 @@ function KeywordInput({ keywords, setKeywords }) {
             {warning && <div className="bg-red-100 text-red-500 mt-2 w-fit rounded p-1">{warning}</div>} {/* Display the warning if present */}
             <div className="flex items-center p-1 border rounded mt-2 max-w-xl">
                 {keywords.map(keyword => (
-                    <span key={keyword} className="border border-blue-400 text-blue-500 mr-2 rounded pl-1 bg-blue-100">
-                        {keyword}
-                        <button className="mx-2 rounded-full" onClick={() => handleRemoveKeyword(keyword)}>x</button>
-                    </span>
+                    <KeywordPill key={keyword} keyword={keyword} onRemove={handleRemoveKeyword}/>
                 ))}
                 <input
                     type="text"
