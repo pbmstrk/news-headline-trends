@@ -6,16 +6,18 @@ function KeywordInput({ keywords, setKeywords }) {
 
     // Handle any change to reset any existing warnings.
     const handleInputChange = (event) => {
-        setInputValue(event.target.value); // need to set input value, otherwise it won't change
+        const newValue = event.target.value
+        setInputValue(newValue);
         setWarning(''); 
+        if (newValue.includes(' ')) {
+            setWarning('Multi-word keywords are not supported');
+        } else {
+            setWarning('');
+        }
     };
 
     const handleKeyDown = (event) => {
-        if (event.key === 'Enter' && inputValue) {
-            if (inputValue.includes(' ')) {
-                setWarning('Multi-word keywords are not supported'); // Set warning for multi-word keyword
-                return;
-            }
+        if (event.key === 'Enter' && inputValue && !inputValue.includes(' ')) {
             if (!keywords.includes(inputValue.toLowerCase())) {
                 setKeywords([...keywords, inputValue.toLowerCase()]);
             }
