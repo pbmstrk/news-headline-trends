@@ -46,13 +46,13 @@ docker run  --rm --env-file {env-file} nytdata-clj
 <details>
     <summary>Python</summary>
 
-    7. Install the requirements using `pip install -r api/python/requirements.txt` (the use of a virtual environment is recommended). Then set the `DATABASE_URL` environment variable.
+7. Install the requirements using `pip install -r api/python/requirements.txt` (the use of a virtual environment is recommended). Then set the `DATABASE_URL` environment variable.
 
-    8. Start the API by running
+8. Start the API by running
 
-    ```bash
-    uvicorn main:app
-    ```
+```bash
+uvicorn main:app
+```
 
 </details>
 
