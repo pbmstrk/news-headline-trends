@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -55,11 +56,12 @@ var db *sqlx.DB
 
 // initDB initializes the connection to the database and is called before the server starts.
 func initDB() error {
-	host := "localhost"
-	user := "postgres"
-	password := "postgres"
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, "5432", user, password, "nytdata_clj")
+	host := os.Getenv("db_host")
+	user := os.Getenv("db_user")
+	password := os.Getenv("db_password")
+	dbName := os.Getenv("db_name")
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
+		host, "5432", user, password, dbName)
 
 	var err error
 	db, err = sqlx.Open("postgres", dsn)
@@ -79,6 +81,12 @@ func getSample(w http.ResponseWriter, r *http.Request) {
 
 	keyword := r.URL.Query().Get("keyword")
 	yearMonth := r.URL.Query().Get("year_month")
+	if keyword == "" || yearMonth == "" {
+		msg := "Missing 'keyword' or 'year_month' parameter"
+		log.Println(msg)
+		http.Error(w, msg, http.StatusBadRequest)
+		return
+	}
 
 	samples := []KeywordSample{}
 	err := db.Select(&samples, sampleHeadlinesQuery, keyword, yearMonth)
@@ -139,6 +147,13 @@ func padDates(occurrences []YearMonthOccurrence) ([]YearMonthOccurrence, error) 
 func getKeywordOccurences(w http.ResponseWriter, r *http.Request) {
 
 	queryKeywords := r.URL.Query().Get("keywords")
+	if queryKeywords == "" {
+		msg := "Missing 'keywords' parameter"
+		log.Println(msg)
+		http.Error(w, msg, http.StatusBadRequest)
+		return
+	}
+
 	keywords := strings.Split(queryKeywords, ",")
 	var occurrences []KeywordOccurrence
 
@@ -186,7 +201,7 @@ func main() {
 
 	handler := c.Handler(mux)
 
-	err = http.ListenAndServe(":3333", handler)
+	err = http.ListenAndServe(":8050", handler)
 	if err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
