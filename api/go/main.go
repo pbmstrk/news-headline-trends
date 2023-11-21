@@ -60,7 +60,7 @@ func initDB() error {
 	user := os.Getenv("db_user")
 	password := os.Getenv("db_password")
 	dbName := os.Getenv("db_name")
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, "5432", user, password, dbName)
 
 	var err error
@@ -194,7 +194,7 @@ func main() {
 	mux.HandleFunc("/occurrences", getKeywordOccurences)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "https://news-headline-trends.vercel.app"},
+		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost", "https://news-headline-trends.vercel.app"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET"},
 	})

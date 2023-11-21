@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    build: ./db/
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - "5434:5432"
+
+  backend:
+    build: ./api/go/
+    ports:
+      - "8050:8050"
+    environment:
+      db_host: db
+      db_user: $POSTGRES_USER
+      db_password: $POSTGRES_PASSWORD
+      db_name: nytdata
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8050
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+
