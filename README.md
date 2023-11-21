@@ -51,4 +51,6 @@ Use the `nytdata-clj/run-nytdata-load.sh` script to load NYT headlines into the 
 ./nytdata-clj/run-nytdata-load.sh
 ```
 
+After completing the setup, the application will be available at `http://localhost:80`.
+
 
