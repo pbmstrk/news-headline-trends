@@ -3,68 +3,52 @@
 [**news-headline-trends**](https://news-headline-trends.vercel.app) visualizes data related to word occurences in New York Times headlines. 
 
 The app consists of the two mains features:
-1. **Word occurence visualisation**: View line graphs displaying the number of headlines containing the selected keywords over time.
+1. **Word occurence visualisation**: Interactive line graphs show the frequency of selected keywords in NYT headlines, which can be used to identify trends and patterns over different time periods.
 2. **Headline sampling**: Headlines that contain a given keyword can be sampled by clicking on a trace in the graph.
 
-## Local setup and usage
+**Technology stack**: PostgreSQL, React, Docker
+
+## Setup
 
 ### Prerequisites
 
-1. Sign up for an API key on the [New York Times Developer Network](https://developer.nytimes.com)
 
-### Database setup
+- Docker Compose: [Installation Guide](https://docs.docker.com/compose/install/)
+- New York Times API Key: [Sign Up Here](https://developer.nytimes.com)
 
-2. Create a PostgreSQL database.
 
-3. Set up the required database objects (like tables, views, etc.) by running: 
+### Local setup
 
-```bash 
-psql {db-connection-string} -f sql-scripts/setup.sql 
-```
+1. **Environment Setup**:
 
-### Data loading
+Create a `.env` file in the project root with the following variables:
 
-4. Navigate to the `nytdata-clj` directory.
+- `POSTGRES_USER`: name of the user to connect to PostgreSQL database
+- `POSTGRES_PASSWORD`: password for user
+- `NYT_API_KEY`: API key obtained from the NYT Developer Network 
 
-5. Set the environment variables `nyt_api_key` and `jdbc_database_url` for the Clojure script.
-
-6. Run the Clojure script to fetch and load data. You can use either `clj`:
-
-```bash 
-clj -M -m nytdata.main
-```
-
-Or Docker:
+An example file,
 
 ```bash
-docker build -t nytdata-clj .
-docker run  --rm --env-file {env-file} nytdata-clj
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+NYT_API_KEY=newyorktimesapikey # replace with your API key
 ```
 
-### API setup
+2. **Build and run containers:**
 
-<details>
-    <summary>Python</summary>
-
-7. Install the requirements using `pip install -r api/python/requirements.txt` (the use of a virtual environment is recommended). Then set the `DATABASE_URL` environment variable.
-
-8. Start the API by running
+Execute the following command to build and run the application:
 
 ```bash
-uvicorn main:app
+docker-compose up --build
 ```
 
-</details>
+3. **Data Loading:**
 
-
-### Running the app
-
-9. Navigate to the frontend directory and install the dependencies by running `npm install`.
-
-10. Set the `VITE_API_URL` environment variable.
-
-10. Launch the development server,
+Use the `nytdata-clj/run-nytdata-load.sh` script to load NYT headlines into the database:
 
 ```bash
-npm run dev
+./nytdata-clj/run-nytdata-load.sh
 ```
+
+
