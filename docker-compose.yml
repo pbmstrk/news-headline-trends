@@ -5,8 +5,10 @@ services:
     build: ./db/
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: nytdata
     ports:
       - "5434:5432"
 
