@@ -53,4 +53,11 @@ Use the `nytdata-clj/run-nytdata-load.sh` script to load NYT headlines into the 
 
 After completing the setup, the application will be available at `http://localhost:80`.
 
+## How is it deployed?
+
+- PostgreSQL database: [Neon](https://neon.tech).
+- React app: [Vercel](https://vercel.com)
+- FastAPI: [Fly.io](https://fly.io)
+- Data loading: [Cloud Run](https://cloud.google.com/run)
+
 
