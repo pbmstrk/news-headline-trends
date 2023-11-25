@@ -45,10 +45,11 @@ docker-compose up --build
 
 3. **Data Loading:**
 
-Use the `nytdata-clj/run-nytdata-load.sh` script to load NYT headlines into the database:
+Use the [`run-nytdata-load.sh`](./nytdata-clj/run-nytdata-load.sh) script to load NYT headlines into the database:
 
 ```bash
-./nytdata-clj/run-nytdata-load.sh
+cd nytdata-clj
+./run-nytdata-load.sh
 ```
 
 After completing the setup, the application will be available at `http://localhost:80`.
