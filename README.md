@@ -45,10 +45,9 @@ docker-compose up --build
 
 3. **Data Loading:**
 
-Use the [`run-nytdata-load.sh`](./nytdata-clj/run-nytdata-load.sh) script to load NYT headlines into the database:
+Use the [`run-nytdata-load.sh`](run-nytdata-load.sh) script to load NYT headlines into the database:
 
 ```bash
-cd nytdata-clj
 ./run-nytdata-load.sh
 ```
 

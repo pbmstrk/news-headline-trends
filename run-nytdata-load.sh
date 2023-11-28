@@ -2,12 +2,13 @@
 
 echo "Loading environment variables"
 set -a
-source ../.env
+source .env
 set +a
+
 
 # Build Docker Image
 echo "Building Docker image..."
-docker build -t nytdata-load .
+docker build -t nytdata-load nytdata-clj
 
 # Check if Docker build was successful
 if [ $? -ne 0 ]; then
