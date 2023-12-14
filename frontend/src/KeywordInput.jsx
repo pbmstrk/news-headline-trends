@@ -36,7 +36,7 @@ function KeywordInput({ keywords, setKeywords }) {
     return (
         <div>
             {warning && <div className="bg-red-100 text-red-500 mt-2 w-fit rounded p-1">{warning}</div>} {/* Display the warning if present */}
-            <div className="flex items-center p-1 border rounded mt-2 max-w-xl">
+            <div className="bg-white flex items-center p-1 border rounded mt-2 max-w-xl">
                 {keywords.map(keyword => (
                     <KeywordPill key={keyword} keyword={keyword} onRemove={handleRemoveKeyword}/>
                 ))}
@@ -46,7 +46,7 @@ function KeywordInput({ keywords, setKeywords }) {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     placeholder="Enter search terms..."
-                    className="flex-1 outline-none"
+                    className="bg-white flex-1 outline-none"
                 />
             </div>
         </div>

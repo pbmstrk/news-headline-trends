@@ -8,7 +8,7 @@ function Footer() {
   let repoLink = "https://github.com/pbmstrk/news-headline-trends";
 
   return (
-    <div className="flex justify-between items-center my-4 px-10">
+    <div className="bg-white flex justify-between items-center my-4 px-10">
       <a href="https://developer.nytimes.com" target="_blank" rel="noopener noreferrer">
         <img src={nytLogo} alt="NYT logo" className="h-10 w-auto" />
       </a>
@@ -35,9 +35,9 @@ function About() {
 
 function App() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="bg-white text-black flex flex-col min-h-screen">
       <div className="bg-gray-200 px-8 py-4">
-        <h1 className="text-4xl font-bold">NYT: News Trends</h1>
+        <h1 className=" text-4xl font-bold">NYT: News Trends</h1>
       </div>
 
       <div className="flex-grow px-8 mt-4">
