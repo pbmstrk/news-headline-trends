@@ -16,19 +16,19 @@
   (let [[year month] (str/split (date-utils/padded-month->month year-month) #"-")]
     (format "https://api.nytimes.com/svc/archive/v1/%s/%s.json" year month)))
 
-(defn extract-articles-from-response
-  "Extracts articles from the API response."
-  [response]
-  (get-in response [:body :response :docs]))
-
 (defn fetch-nyt-data-for-month
   "Fetches data from the NYT API for a given year and month."
   [year-month api-key]
   (let [url (construct-nyt-api-url year-month)
         response (client/get url {:throw-exceptions false :as :json :query-params {:api-key api-key}})]
     (if (= 200 (:status response))
-      (extract-articles-from-response response)
+      response
       (throw (Exception. (str "Failed to fetch data for " year-month ": " (:status response)))))))
+
+(defn extract-articles-from-response
+  "Extracts articles from the API response."
+  [response]
+  (get-in response [:body :response :docs]))
 
 (defn extract-metadata [doc]
   ((juxt :uri
@@ -45,7 +45,8 @@
 
 (defn process-month [ds ym api-key]
   (log/info "Fetching data for month: " ym)
-  (let [docs (fetch-nyt-data-for-month ym api-key)
+  (let [docs (-> (fetch-nyt-data-for-month ym api-key)
+                 extract-articles-from-response)
         num-docs (count docs)]
     (log/info "Number of records: " num-docs)
     (insert-headlines! ds docs)

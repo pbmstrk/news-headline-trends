@@ -23,9 +23,10 @@
                             :section_name "section_name"}))))
 
 (deftest fetch-nyt-data-for-month-test
-  (with-redefs [clj-http.client/get (fn [_ _] {:status 200 :body {:response {:docs [:hit1 :hit2]}}})]
-    (let [result (fetch-nyt-data-for-month "2022-01" "api-key")]
-      (is (= [:hit1 :hit2] result))))
+  (let [response {:status 200 :body {:response {:docs [:hit1 :hit2]}}}]
+    (with-redefs [clj-http.client/get (fn [_ _] response)]
+      (let [result (fetch-nyt-data-for-month "2022-01" "api-key")]
+        (is (= response result)))))
   (with-redefs [clj-http.client/get (fn [_ _] {:status 404})]
     (is (thrown? Exception (fetch-nyt-data-for-month "2022-01" "api-key")))))
 
