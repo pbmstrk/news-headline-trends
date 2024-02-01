@@ -74,8 +74,5 @@
     (log/info "Processing months: " ym-seq)
     (doseq [ym ym-seq]
       (process-month ds ym api-key)
-      (Thread/sleep 12000))
-    (when (seq ym-seq)
-      (log/info "Refreshing materialized views")
-      (jdbc/execute! ds ["refresh materialized view monthly_content_counts_vw"]))))
+      (Thread/sleep 12000))))
 

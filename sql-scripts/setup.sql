@@ -15,15 +15,6 @@ CREATE TABLE IF NOT EXISTS headlines (
 
 CREATE INDEX textsearch_idx ON headlines USING gin (textsearchable_index_col);
 
-CREATE MATERIALIZED VIEW monthly_content_counts_vw AS (
-  SELECT
-    year_month,
-    section_name,
-    count(*) AS num_articles
-  FROM headlines
-  GROUP BY year_month, section_name
-);
-
 CREATE TABLE IF NOT EXISTS process_log (
   year_month text UNIQUE NOT NULL,
   num integer NOT NULL CHECK (num > 0)
