@@ -1,4 +1,5 @@
 import os
+import io
 import pandas as pd
 from sqlalchemy import create_engine, text, Connection, Engine
 from fastapi import FastAPI, Depends, Request
@@ -6,6 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+import redis
+
+
+r = redis.Redis.from_url(
+    os.getenv("REDIS_URL")
+)
 
 
 # Constants
@@ -89,7 +96,15 @@ def get_sample(request: Request, year_month: str, keyword: str, connection: Conn
 
 def query_occurrences(keyword: str, connection: Connection) -> pd.DataFrame:
     """Query occurrences for a given keyword and add keyword as a column."""
-    result = execute_query(connection, SQL_FULL_TEXT_SEARCH, word=keyword)
+
+    cache_key = f"occurrences:{keyword}"
+    cached_result = r.get(cache_key)
+    if cached_result:
+        decoded_result = cached_result.decode('utf-8') 
+        result = pd.read_json(io.StringIO(decoded_result), orient='split')
+    else:
+        result = execute_query(connection, SQL_FULL_TEXT_SEARCH, word=keyword)
+        r.set(cache_key, result.to_json(orient='split'), ex=60*60)
     return (result, keyword)
 
 def fill_missing_months(df: pd.DataFrame, date_range: list[str]) -> pd.DataFrame:
