@@ -6,7 +6,7 @@ The app consists of the two mains features:
 1. **Word occurence visualisation**: Interactive line graphs show the frequency of selected keywords in NYT headlines, which can be used to identify trends and patterns over different time periods.
 2. **Headline sampling**: Headlines that contain a given keyword can be sampled by clicking on a trace in the graph.
 
-**Technology stack**: PostgreSQL, React, Docker
+**Technology stack**: PostgreSQL, Redis, React, Docker
 
 ## Setup
 
@@ -55,8 +55,9 @@ After completing the setup, the application will be available at `http://localho
 
 ## How is it deployed?
 
-- PostgreSQL database: [Neon](https://neon.tech).
+- Database: [Cockroach DB](https://www.cockroachlabs.com)
 - React app: [Vercel](https://vercel.com)
+- Redis: [Upstash](https://upstash.com)
 - FastAPI: [Fly.io](https://fly.io)
 - Data loading: [Cloud Run](https://cloud.google.com/run)
 
