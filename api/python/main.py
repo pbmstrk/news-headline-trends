@@ -21,7 +21,7 @@ r = redis.Redis.from_url(
 
 # Constants
 ORIGINS = [
-    "http://localhost:5173",
+    "http://localhost",
     "https://news-headline-trends.vercel.app"
 ]
 SQL_HEADLINES_QUERY = """
