@@ -10,8 +10,12 @@ from slowapi.errors import RateLimitExceeded
 import redis
 
 
+REDIS_URL = os.getenv("REDIS_URL")
+if REDIS_URL is None:
+    raise Exception("REDIS_URL environment variable not found")
+
 r = redis.Redis.from_url(
-    os.getenv("REDIS_URL")
+    REDIS_URL, decode_responses=True
 )
 
 
@@ -94,14 +98,13 @@ def get_sample(request: Request, year_month: str, keyword: str, connection: Conn
 
     return sample.to_dict("records")
 
-def query_occurrences(keyword: str, connection: Connection) -> pd.DataFrame:
+def query_occurrences(keyword: str, connection: Connection) -> tuple[pd.DataFrame, str]:
     """Query occurrences for a given keyword and add keyword as a column."""
 
     cache_key = f"occurrences:{keyword}"
     cached_result = r.get(cache_key)
     if cached_result:
-        decoded_result = cached_result.decode('utf-8') 
-        result = pd.read_json(io.StringIO(decoded_result), orient='split')
+        result = pd.read_json(io.StringIO(cached_result), orient='split') 
     else:
         result = execute_query(connection, SQL_FULL_TEXT_SEARCH, word=keyword)
         r.set(cache_key, result.to_json(orient='split'), ex=60*60)
@@ -125,11 +128,11 @@ def get_occurences(request: Request, keywords: str, connection: Connection = Dep
     result_df = pd.concat([df[0] for df in df_list])
 
     # Create a full date range for the combined result
-    full_date_range = pd.date_range(
+    full_date_range = list(pd.date_range(
         start=result_df["year_month"].min(),
         end=result_df["year_month"].max(),
         freq="MS"
-    ).strftime("%Y-%m")
+    ).strftime("%Y-%m"))
 
     # Fill missing months for each word
     filled_dfs = [(fill_missing_months(df, full_date_range), keyword) for (df, keyword) in df_list]
