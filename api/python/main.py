@@ -1,5 +1,6 @@
 import os
 import io
+import logging
 import pandas as pd
 from sqlalchemy import create_engine, text, Connection, Engine
 from fastapi import FastAPI, Depends, Request
@@ -9,6 +10,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import redis
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 REDIS_URL = os.getenv("REDIS_URL")
 if REDIS_URL is None:
@@ -91,6 +93,8 @@ def get_sample(request: Request, year_month: str, keyword: str, connection: Conn
     The function searches the headlines database for records that match the specified `year_month` 
     and contain the `keyword`. It then randomly selects a sample of the results, with a maximum 
     of 5 records. If there are fewer than 5 records, it returns all of them."""
+
+    logging.info(f"Received request - samples for year_month: {year_month}, keyword: {keyword}")
     result = execute_query(
         connection, SQL_HEADLINES_QUERY, keyword=keyword, year_month=year_month
     )
@@ -104,8 +108,10 @@ def query_occurrences(keyword: str, connection: Connection) -> tuple[pd.DataFram
     cache_key = f"occurrences:{keyword}"
     cached_result = r.get(cache_key)
     if cached_result:
+        logging.info(f"Cache hit for keyword: {keyword}")
         result = pd.read_json(io.StringIO(cached_result), orient='split') 
     else:
+        logging.info(f"Cache miss for keyword: {keyword}. Fetching from database.")
         result = execute_query(connection, SQL_FULL_TEXT_SEARCH, word=keyword)
         r.set(cache_key, result.to_json(orient='split'), ex=60*60)
     return (result, keyword)
@@ -123,16 +129,18 @@ def fill_missing_months(df: pd.DataFrame, date_range: list[str]) -> pd.DataFrame
 @app.get("/occurrences")
 @limiter.limit("300/minute")
 def get_occurences(request: Request, keywords: str, connection: Connection = Depends(get_connection)):
+
+    logging.info(f"Received request - occurrences with keywords: {keywords}")
     tags = keywords.split(",")
     df_list = [query_occurrences(tag, connection) for tag in tags]
     result_df = pd.concat([df[0] for df in df_list])
 
+    min_date = result_df["year_month"].min()
+    max_date = result_df["year_month"].max()
+    logging.info(f"Min date: {min_date}, Max date: {max_date}")
+
     # Create a full date range for the combined result
-    full_date_range = list(pd.date_range(
-        start=result_df["year_month"].min(),
-        end=result_df["year_month"].max(),
-        freq="MS"
-    ).strftime("%Y-%m"))
+    full_date_range = list(pd.date_range(start=min_date, end=max_date, freq="MS").strftime("%Y-%m"))
 
     # Fill missing months for each word
     filled_dfs = [(fill_missing_months(df, full_date_range), keyword) for (df, keyword) in df_list]
