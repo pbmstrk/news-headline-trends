@@ -43,7 +43,7 @@ function Graph({ graphData, setSampleData }) {
             <ResponsiveLine
                 data={graphData}
                 margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-                xScale={{ type: "time", format: "%Y-%m" }}
+                xScale={{ type: "time", format: "%Y-%m", precision: 'month', useUTC: false }}
                 yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
                 axisTop={null}
                 axisRight={null}
