@@ -1,4 +1,4 @@
-FROM clojure:latest as build
+FROM clojure:latest AS build
 
 WORKDIR /
 
