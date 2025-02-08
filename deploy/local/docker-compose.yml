@@ -1,40 +1,59 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - "./sql-scripts:/docker-entrypoint-initdb.d"
+      - "../../sql-scripts:/docker-entrypoint-initdb.d"
     environment:
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
       POSTGRES_DB: nytdata
     ports:
       - "5434:5432"
+    restart: unless-stopped
+    networks: 
+      - nytdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   
-  redis: # Define the Redis service
+  redis:
     image: redis:latest
     command: redis-server --requirepass redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
+    networks: 
+      - nytdata
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    build: ./api/python/
+    build: ../../api/python/
     ports:
       - "8050:8050"
+    networks: 
+      - nytdata
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/nytdata
       REDIS_URL: redis://:redis@redis:6379
+    restart: unless-stopped
     depends_on:
       - db
       - redis
 
   frontend:
     build:
-      context: ./frontend
+      context: ../../frontend
       args:
         VITE_API_URL: http://localhost:8050
+    networks: 
+      - nytdata
     ports:
       - "80:80"
     depends_on:
@@ -42,4 +61,7 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  nytdata:
 

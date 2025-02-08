@@ -40,7 +40,7 @@ NYT_API_KEY=newyorktimesapikey # replace with your API key
 Execute the following command to build and run the application:
 
 ```bash
-docker-compose up --build
+docker-compose -f deploy/local/docker-compose.yml  up --build
 ```
 
 3. **Data Loading:**
