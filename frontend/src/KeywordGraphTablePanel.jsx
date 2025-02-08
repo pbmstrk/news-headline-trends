@@ -7,12 +7,12 @@ function KeywordGraphTablePanel() {
     const [keywords, setKeywords] = useState(['trump', 'obama']);
     const [graphData, setGraphData] = useState(null);
     const [sampleData, setSampleData] = useState(null);
-    const [isLoading, setIsLoading] = useState(false); 
+    const [isLoading, setIsLoading] = useState(false);
 
     let apiURL = import.meta.env.VITE_API_URL;
 
     const fetchData = (keywordsToFetch) => {
-        setIsLoading(true);       
+        setIsLoading(true);
         fetch(`${apiURL}/occurrences?keywords=${keywordsToFetch.join(",")}`)
             .then(response => response.json())
             .then(data => {
@@ -22,7 +22,7 @@ function KeywordGraphTablePanel() {
                 console.error("There was an error fetching graph data:", error);
             })
             .finally(() => {
-                setIsLoading(false); 
+                setIsLoading(false);
             });
     };
 
@@ -36,24 +36,30 @@ function KeywordGraphTablePanel() {
 
     if (!graphData) {
         return (
-            <div className="flex flex-col">
-                <KeywordInput keywords={keywords} setKeywords={setKeywords} />
-                <div className="mt-8 flex justify-center">
+            <div className='flex flex-col items-center'>
+                <div>
+                    <KeywordInput keywords={keywords} setKeywords={setKeywords} />
+                </div>
+                <div className='mt-4'>
                     <span className="loading loading-spinner loading-lg text-gray-700"></span>
                 </div>
             </div>
         )
     }
 
-
     return (
-        <div className="flex flex-col">
-            <div className="flex items-center">
+
+        <div className='flex flex-col items-center'>
+            <div>
                 <KeywordInput keywords={keywords} setKeywords={setKeywords} />
-                {isLoading && <span className="loading loading-spinner loading-md ml-2 text-gray-700"></span>}
             </div>
-            <Graph graphData={graphData} setSampleData={setSampleData} />
-            {sampleData && <Table sampleData={sampleData} />}
+            <div className='mt-4'>
+                {isLoading && <span className="loading loading-spinner loading-md text-gray-700"></span>}
+            </div>
+            <div className="w-11/12">
+                <Graph graphData={graphData} setSampleData={setSampleData} />
+                {sampleData && <Table sampleData={sampleData} />}
+            </div>
         </div>
     );
 }
