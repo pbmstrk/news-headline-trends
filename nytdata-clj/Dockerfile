@@ -14,4 +14,6 @@ WORKDIR /
 
 COPY --from=build target/nytdata-standalone.jar /
 
+COPY root.crt* /root/.postgresql/root.crt
+
 ENTRYPOINT ["java", "-jar", "nytdata-standalone.jar"]
