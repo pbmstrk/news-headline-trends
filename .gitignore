@@ -26,3 +26,6 @@ target/
 *.crt
 *.lsp
 *.env
+.terraform/
+*.tfstate
+*.tfstate.*
