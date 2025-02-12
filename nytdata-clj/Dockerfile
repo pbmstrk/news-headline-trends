@@ -1,4 +1,4 @@
-FROM clojure:latest AS build
+FROM clojure:temurin-17-tools-deps AS build
 
 WORKDIR /
 
