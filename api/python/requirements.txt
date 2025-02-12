@@ -5,3 +5,4 @@ pandas
 psycopg2-binary
 slowapi
 redis
+sqlalchemy-cockroachdb
