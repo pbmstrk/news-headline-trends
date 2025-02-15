@@ -11,7 +11,7 @@ services:
     ports:
       - "5434:5432"
     restart: unless-stopped
-    networks: 
+    networks:
       - nytdata
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
@@ -25,7 +25,7 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
-    networks: 
+    networks:
       - nytdata
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -37,7 +37,7 @@ services:
     build: ../../api/python/
     ports:
       - "8050:8050"
-    networks: 
+    networks:
       - nytdata
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/nytdata
@@ -52,7 +52,7 @@ services:
       context: ../../frontend
       args:
         VITE_API_URL: http://localhost:8050
-    networks: 
+    networks:
       - nytdata
     ports:
       - "80:80"

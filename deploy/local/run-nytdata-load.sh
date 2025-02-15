@@ -13,14 +13,14 @@ if [[ $? -ne 0 ]]; then
 fi
 echo "Docker image built successfully."
 
-DATABASE_CONTAINER_STATUS=$(docker container inspect -f '{{.State.Status}}' local-db-1 2> /dev/null) 
+DATABASE_CONTAINER_STATUS=$(docker container inspect -f '{{.State.Status}}' local-db-1 2> /dev/null)
 
-if [[ "$DATABASE_CONTAINER_STATUS" != "running" ]]; then 
+if [[ "$DATABASE_CONTAINER_STATUS" != "running" ]]; then
     echo "Container local-db-1 is not running (status: '$DATABASE_CONTAINER_STATUS'). Exiting."
     exit 1
 fi
 
-if ! docker network inspect local_nytdata > /dev/null 2>&1; then 
+if ! docker network inspect local_nytdata > /dev/null 2>&1; then
     echo "Network local_nytdata does not exist. Exiting."
     exit 1
 fi
